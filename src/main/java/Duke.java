@@ -40,10 +40,29 @@ public class Duke {
                 tasks[index].markAsNotDone();
                 System.out.println("     OK, I've marked this task as not done yet:");
                 System.out.println("       " + tasks[index]);
-            } else {
-                tasks[taskCount] = new Task(input);
+            } else if (input.startsWith("todo ")) {
+                String description = input.substring(5);
+                tasks[taskCount] = new Todo(description);
                 taskCount++;
-                System.out.println("     added: " + input);
+                printAdded(tasks[taskCount - 1], taskCount);
+            } else if (input.startsWith("deadline ")) {
+                String rest = input.substring(9);
+                int byIndex = rest.indexOf("/by ");
+                String description = rest.substring(0, byIndex).trim();
+                String by = rest.substring(byIndex + 4).trim();
+                tasks[taskCount] = new Deadline(description, by);
+                taskCount++;
+                printAdded(tasks[taskCount - 1], taskCount);
+            } else if (input.startsWith("event ")) {
+                String rest = input.substring(6);
+                int fromIndex = rest.indexOf("/from ");
+                int toIndex = rest.indexOf("/to ");
+                String description = rest.substring(0, fromIndex).trim();
+                String from = rest.substring(fromIndex + 6, toIndex).trim();
+                String to = rest.substring(toIndex + 4).trim();
+                tasks[taskCount] = new Event(description, from, to);
+                taskCount++;
+                printAdded(tasks[taskCount - 1], taskCount);
             }
             System.out.println(DIVIDER);
             input = scanner.nextLine();
@@ -54,5 +73,12 @@ public class Duke {
         System.out.println(DIVIDER);
 
         scanner.close();
+    }
+
+    private static void printAdded(Task task, int taskCount) {
+        String taskWord = (taskCount == 1) ? "task" : "tasks";
+        System.out.println("     Got it. I've added this task:");
+        System.out.println("       " + task);
+        System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
     }
 }
