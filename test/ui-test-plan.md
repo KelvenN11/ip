@@ -185,3 +185,68 @@ bye
      Bye. Hope to see you again soon!
     ____________________________________________________________
 ```
+
+## Test Case 5: Error handling for invalid input
+
+**Aim:** An unrecognized command word, a todo/deadline/event with a missing
+or malformed argument, and a mark with a missing/non-numeric/out-of-range
+index each produce a specific "OOPS!!!" message (via `BotException`)
+instead of crashing or silently doing nothing, and no task is added or
+changed as a result.
+
+**Input:**
+```
+blah
+todo
+deadline
+deadline return book
+event
+event meeting /from Mon
+mark
+mark abc
+mark 1
+bye
+```
+
+**Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm BOT.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, or bye.
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! A todo needs a description, e.g. "todo borrow book".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! A deadline needs a "/by" date or time, e.g. "deadline return book /by Sunday".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! A deadline needs a "/by" date or time, e.g. "deadline return book /by Sunday".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! An event needs both "/from" and "/to", e.g. "event project meeting /from Mon 2pm /to 4pm".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! An event needs both "/from" and "/to", e.g. "event project meeting /from Mon 2pm /to 4pm".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! Tell me which task number to mark, e.g. "mark 2".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! "abc" isn't a task number - try something like "mark 2".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! There's no task number 1 in your list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
