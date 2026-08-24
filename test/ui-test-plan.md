@@ -189,10 +189,15 @@ bye
 ## Test Case 5: Error handling for invalid input
 
 **Aim:** An unrecognized command word, a todo/deadline/event with a missing
-or malformed argument, and a mark with a missing/non-numeric/out-of-range
-index each produce a specific "OOPS!!!" message (via `BotException`)
-instead of crashing or silently doing nothing, and no task is added or
-changed as a result.
+or malformed argument, and a mark/delete with a missing/non-numeric/
+out-of-range index each produce a specific "OOPS!!!" message (via
+`BotException`) instead of crashing or silently doing nothing, and no
+task is added, changed, or removed as a result — the trailing `list`
+confirms the task collection is still empty after every failed command.
+`mark`, `unmark`, and `delete` all validate their index through the same
+`parseTaskIndex` helper, so exercising it via `mark` and `delete` here is
+taken as sufficient coverage for `unmark` too, rather than repeating the
+same three cases a third time.
 
 **Input:**
 ```
@@ -205,6 +210,10 @@ event meeting /from Mon
 mark
 mark abc
 mark 1
+delete
+delete abc
+delete 1
+list
 bye
 ```
 
@@ -220,7 +229,7 @@ bye
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, or bye.
+     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, or bye.
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! A todo needs a description, e.g. "todo borrow book".
@@ -245,6 +254,113 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! There's no task number 1 in your list.
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! Tell me which task number to delete, e.g. "delete 2".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! "abc" isn't a task number - try something like "delete 2".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! There's no task number 1 in your list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks in your list:
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+## Test Case 6: Delete a task
+
+**Aim:** `delete N` removes the Nth task, prints its final state and the
+new running task count, and a subsequent `list` shows the remaining
+tasks renumbered with no gap left by the deleted task.
+
+**Input:**
+```
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+todo join sports club
+todo borrow book
+mark 1
+mark 2
+mark 4
+list
+delete 3
+list
+bye
+```
+
+**Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm BOT.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] read book
+     Now you have 1 task in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] return book (by: June 6th)
+     Now you have 2 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     Now you have 3 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] join sports club
+     Now you have 4 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] borrow book
+     Now you have 5 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Nice! I've marked this task as done:
+       [T][X] read book
+    ____________________________________________________________
+    ____________________________________________________________
+     Nice! I've marked this task as done:
+       [D][X] return book (by: June 6th)
+    ____________________________________________________________
+    ____________________________________________________________
+     Nice! I've marked this task as done:
+       [T][X] join sports club
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] read book
+     2.[D][X] return book (by: June 6th)
+     3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     4.[T][X] join sports club
+     5.[T][ ] borrow book
+    ____________________________________________________________
+    ____________________________________________________________
+     Noted. I've removed this task:
+       [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     Now you have 4 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] read book
+     2.[D][X] return book (by: June 6th)
+     3.[T][X] join sports club
+     4.[T][ ] borrow book
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!

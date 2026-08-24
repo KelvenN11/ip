@@ -1,8 +1,8 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Duke {
     private static final String DIVIDER = "    ____________________________________________________________";
-    private static final int MAX_TASKS = 100;
 
     public static void main(String[] args) {
         String name = "BOT";
@@ -18,8 +18,7 @@ public class Duke {
         System.out.println("     What can I do for you?");
         System.out.println(DIVIDER);
 
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        ArrayList<Task> tasks = new ArrayList<>();
 
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
@@ -34,46 +33,49 @@ public class Duke {
                 switch (commandWord) {
                 case "list":
                     System.out.println("     Here are the tasks in your list:");
-                    for (int i = 0; i < taskCount; i++) {
-                        System.out.println("     " + (i + 1) + "." + tasks[i]);
+                    for (int i = 0; i < tasks.size(); i++) {
+                        System.out.println("     " + (i + 1) + "." + tasks.get(i));
                     }
                     break;
                 case "mark": {
-                    int index = parseTaskIndex(rest, "mark", taskCount);
-                    tasks[index].markAsDone();
+                    int index = parseTaskIndex(rest, "mark", tasks.size());
+                    tasks.get(index).markAsDone();
                     System.out.println("     Nice! I've marked this task as done:");
-                    System.out.println("       " + tasks[index]);
+                    System.out.println("       " + tasks.get(index));
                     break;
                 }
                 case "unmark": {
-                    int index = parseTaskIndex(rest, "unmark", taskCount);
-                    tasks[index].markAsNotDone();
+                    int index = parseTaskIndex(rest, "unmark", tasks.size());
+                    tasks.get(index).markAsNotDone();
                     System.out.println("     OK, I've marked this task as not done yet:");
-                    System.out.println("       " + tasks[index]);
+                    System.out.println("       " + tasks.get(index));
+                    break;
+                }
+                case "delete": {
+                    int index = parseTaskIndex(rest, "delete", tasks.size());
+                    Task removed = tasks.remove(index);
+                    printRemoved(removed, tasks.size());
                     break;
                 }
                 case "todo": {
-                    tasks[taskCount] = parseTodo(rest);
-                    taskCount++;
-                    printAdded(tasks[taskCount - 1], taskCount);
+                    tasks.add(parseTodo(rest));
+                    printAdded(tasks.get(tasks.size() - 1), tasks.size());
                     break;
                 }
                 case "deadline": {
-                    tasks[taskCount] = parseDeadline(rest);
-                    taskCount++;
-                    printAdded(tasks[taskCount - 1], taskCount);
+                    tasks.add(parseDeadline(rest));
+                    printAdded(tasks.get(tasks.size() - 1), tasks.size());
                     break;
                 }
                 case "event": {
-                    tasks[taskCount] = parseEvent(rest);
-                    taskCount++;
-                    printAdded(tasks[taskCount - 1], taskCount);
+                    tasks.add(parseEvent(rest));
+                    printAdded(tasks.get(tasks.size() - 1), tasks.size());
                     break;
                 }
                 default:
                     throw new BotException(
                             "OOPS!!! I don't understand \"" + commandWord
-                                    + "\" - try list, todo, deadline, event, mark, unmark, or bye.");
+                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, or bye.");
                 }
             } catch (BotException e) {
                 System.out.println("     " + e.getMessage());
@@ -93,6 +95,13 @@ public class Duke {
     private static void printAdded(Task task, int taskCount) {
         String taskWord = (taskCount == 1) ? "task" : "tasks";
         System.out.println("     Got it. I've added this task:");
+        System.out.println("       " + task);
+        System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
+    }
+
+    private static void printRemoved(Task task, int taskCount) {
+        String taskWord = (taskCount == 1) ? "task" : "tasks";
+        System.out.println("     Noted. I've removed this task:");
         System.out.println("       " + task);
         System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
     }
