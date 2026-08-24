@@ -1,12 +1,12 @@
 ---
 name: test-ui
-description: Run the console UI test cases in test/ui-test-plan.md against the compiled Duke program and report pass/fail with a full transcript. Use after any change to src/main/java to check for regressions.
+description: Run the console UI test cases in test/ui-test-plan.md against the compiled Bot program and report pass/fail with a full transcript. Use after any change to src/main/java to check for regressions.
 ---
 
 # test-ui
 
 Runs the black-box console test cases recorded in `test/ui-test-plan.md`
-against the current `Duke` program, in order, stopping at the first
+against the current `Bot` program, in order, stopping at the first
 failure.
 
 ## Steps
@@ -24,9 +24,9 @@ failure.
    test cases.
 
 3. For each test case, in the order listed in the file:
-   a. Run `java -cp out Duke`, feeding the test case's **Input** lines to
+   a. Run `java -cp out Bot`, feeding the test case's **Input** lines to
       standard input in order (e.g. via `printf 'line1\nline2\n... | java
-      -cp out Duke`).
+      -cp out Bot`).
    b. Capture the full standard output produced.
    c. Compare it verbatim against the test case's **Expected Output**
       block. Ignore a difference in only the trailing newline at the very
@@ -48,7 +48,7 @@ failure.
 ## Notes
 
 - Test cases must be run independently — each one starts a fresh `java -cp
-  out Duke` process, so task state never carries over between test cases.
+  out Bot` process, so task state never carries over between test cases.
 - If `test/ui-test-plan.md` is missing or has no test cases, report that
   instead of silently doing nothing.
 - Do not modify `src/main/java` or `test/ui-test-plan.md` as part of

@@ -10,7 +10,7 @@ compares the program's full console output against the expected output.
 ## How to run
 
 1. Build: `javac -d out src/main/java/*.java` (run from the repository root).
-2. For each test case, run `java -cp out Duke`, sending the test case's
+2. For each test case, run `java -cp out Bot`, sending the test case's
    **Input** lines to standard input in order (one command per line).
 3. Compare the program's actual standard output, verbatim, against the test
    case's **Expected Output** block. A trailing newline difference at the
@@ -35,7 +35,7 @@ bye
 |  _ \| | | | | |  
 | |_) | |_| | | |  
 |____/ \___/  |_|  
-     Hello! I'm BOT.
+     Hello! I'm Bot.
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
@@ -62,7 +62,7 @@ bye
 |  _ \| | | | | |  
 | |_) | |_| | | |  
 |____/ \___/  |_|  
-     Hello! I'm BOT.
+     Hello! I'm Bot.
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
@@ -96,7 +96,7 @@ bye
 |  _ \| | | | | |  
 | |_) | |_| | | |  
 |____/ \___/  |_|  
-     Hello! I'm BOT.
+     Hello! I'm Bot.
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
@@ -150,7 +150,7 @@ bye
 |  _ \| | | | | |  
 | |_) | |_| | | |  
 |____/ \___/  |_|  
-     Hello! I'm BOT.
+     Hello! I'm Bot.
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
@@ -225,7 +225,7 @@ bye
 |  _ \| | | | | |  
 | |_) | |_| | | |  
 |____/ \___/  |_|  
-     Hello! I'm BOT.
+     Hello! I'm Bot.
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
@@ -302,7 +302,7 @@ bye
 |  _ \| | | | | |  
 | |_) | |_| | | |  
 |____/ \___/  |_|  
-     Hello! I'm BOT.
+     Hello! I'm Bot.
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________

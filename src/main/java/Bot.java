@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Duke {
+public class Bot {
     private static final String DIVIDER = "    ____________________________________________________________";
 
     public static void main(String[] args) {
-        String name = "BOT";
+        String name = "Bot";
         String banner = " ____   ___  _____ \n"
                 + "| __ ) / _ \\|_   _|\n"
                 + "|  _ \\| | | | | |  \n"
