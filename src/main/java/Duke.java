@@ -2,6 +2,7 @@ import java.util.Scanner;
 
 public class Duke {
     private static final String DIVIDER = "    ____________________________________________________________";
+    private static final int MAX_TASKS = 100;
 
     public static void main(String[] args) {
         String name = "BOT";
@@ -17,11 +18,22 @@ public class Duke {
         System.out.println("     What can I do for you?");
         System.out.println(DIVIDER);
 
+        String[] tasks = new String[MAX_TASKS];
+        int taskCount = 0;
+
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         while (!input.equals("bye")) {
             System.out.println(DIVIDER);
-            System.out.println("     " + input);
+            if (input.equals("list")) {
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println("     " + (i + 1) + ". " + tasks[i]);
+                }
+            } else {
+                tasks[taskCount] = input;
+                taskCount++;
+                System.out.println("     added: " + input);
+            }
             System.out.println(DIVIDER);
             input = scanner.nextLine();
         }
