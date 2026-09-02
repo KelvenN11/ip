@@ -19,12 +19,21 @@ public class Bot {
         System.out.println(DIVIDER);
 
         ArrayList<Task> tasks;
+        ArrayList<String> loadWarnings = new ArrayList<>();
         try {
-            tasks = new ArrayList<>(Storage.load());
+            tasks = new ArrayList<>(Storage.load(loadWarnings));
         } catch (BotException e) {
             System.out.println("     " + e.getMessage());
             System.out.println(DIVIDER);
             tasks = new ArrayList<>();
+        }
+        if (!loadWarnings.isEmpty()) {
+            System.out.println("     Note: some saved tasks were skipped because the data file looks "
+                    + "corrupted:");
+            for (String warning : loadWarnings) {
+                System.out.println("       - " + warning);
+            }
+            System.out.println(DIVIDER);
         }
 
         Scanner scanner = new Scanner(System.in);
