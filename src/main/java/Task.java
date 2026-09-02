@@ -4,8 +4,8 @@ import java.time.LocalDate;
  * Represents a task with a description and a done/not-done status.
  */
 public abstract class Task {
-    protected String description;
-    protected boolean isDone;
+    private final String description;
+    private boolean isDone;
 
     public Task(String description) {
         this.description = description;
@@ -14,6 +14,16 @@ public abstract class Task {
 
     public String getStatusIcon() {
         return (isDone ? "X" : " "); // mark done task with X
+    }
+
+    /** The task's description text, e.g. "return book". */
+    protected String getDescription() {
+        return description;
+    }
+
+    /** Whether the task is currently marked done, e.g. for a subclass building its save-file line. */
+    protected boolean isDone() {
+        return isDone;
     }
 
     public void markAsDone() {

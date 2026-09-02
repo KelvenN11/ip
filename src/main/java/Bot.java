@@ -1,24 +1,40 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Bot {
     private static final String DIVIDER = "    ____________________________________________________________";
+    private static final String NAME = "Bot";
+    private static final String BANNER = " ____   ___  _____ \n"
+            + "| __ ) / _ \\|_   _|\n"
+            + "|  _ \\| | | | | |  \n"
+            + "| |_) | |_| | | |  \n"
+            + "|____/ \\___/  |_|  \n";
 
     public static void main(String[] args) {
-        String name = "Bot";
-        String banner = " ____   ___  _____ \n"
-                + "| __ ) / _ \\|_   _|\n"
-                + "|  _ \\| | | | | |  \n"
-                + "| |_) | |_| | | |  \n"
-                + "|____/ \\___/  |_|  \n";
+        printWelcome();
+        List<Task> tasks = loadTasks();
+        runCommandLoop(tasks);
+        printFarewell();
+    }
 
+    /** Prints the startup banner and greeting. */
+    private static void printWelcome() {
         System.out.println(DIVIDER);
-        System.out.print(banner);
-        System.out.println("     Hello! I'm " + name + ".");
+        System.out.print(BANNER);
+        System.out.println("     Hello! I'm " + NAME + ".");
         System.out.println("     What can I do for you?");
         System.out.println(DIVIDER);
+    }
 
+    /**
+     * Loads the saved task list from disk (see {@link Storage}), reporting
+     * a load failure or any corrupted lines that had to be skipped. Starts
+     * with an empty list if there's nothing to load or loading failed
+     * outright.
+     */
+    private static List<Task> loadTasks() {
         ArrayList<Task> tasks;
         ArrayList<String> loadWarnings = new ArrayList<>();
         try {
@@ -36,95 +52,112 @@ public class Bot {
             }
             System.out.println(DIVIDER);
         }
+        return tasks;
+    }
 
+    /**
+     * Reads one line of user input at a time and executes it as a command,
+     * until the user types "bye".
+     */
+    private static void runCommandLoop(List<Task> tasks) {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         while (!input.equals("bye")) {
             System.out.println(DIVIDER);
-
-            String[] parts = input.split(" ", 2);
-            String commandWord = parts[0];
-            String rest = (parts.length > 1) ? parts[1] : "";
-
-            try {
-                switch (commandWord) {
-                case "list":
-                    System.out.println("     Here are the tasks in your list:");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        System.out.println("     " + (i + 1) + "." + tasks.get(i));
-                    }
-                    break;
-                case "mark": {
-                    int index = parseTaskIndex(rest, "mark", tasks.size());
-                    tasks.get(index).markAsDone();
-                    System.out.println("     Nice! I've marked this task as done:");
-                    System.out.println("       " + tasks.get(index));
-                    saveTasks(tasks);
-                    break;
-                }
-                case "unmark": {
-                    int index = parseTaskIndex(rest, "unmark", tasks.size());
-                    tasks.get(index).markAsNotDone();
-                    System.out.println("     OK, I've marked this task as not done yet:");
-                    System.out.println("       " + tasks.get(index));
-                    saveTasks(tasks);
-                    break;
-                }
-                case "delete": {
-                    int index = parseTaskIndex(rest, "delete", tasks.size());
-                    Task removed = tasks.remove(index);
-                    printRemoved(removed, tasks.size());
-                    saveTasks(tasks);
-                    break;
-                }
-                case "todo": {
-                    tasks.add(parseTodo(rest));
-                    printAdded(tasks.get(tasks.size() - 1), tasks.size());
-                    saveTasks(tasks);
-                    break;
-                }
-                case "deadline": {
-                    tasks.add(parseDeadline(rest));
-                    printAdded(tasks.get(tasks.size() - 1), tasks.size());
-                    saveTasks(tasks);
-                    break;
-                }
-                case "event": {
-                    tasks.add(parseEvent(rest));
-                    printAdded(tasks.get(tasks.size() - 1), tasks.size());
-                    saveTasks(tasks);
-                    break;
-                }
-                case "on": {
-                    LocalDate date = parseOnDate(rest);
-                    System.out.println("     Here are the tasks on " + TaskDateTime.formatDateOnly(date) + ":");
-                    int count = 0;
-                    for (Task task : tasks) {
-                        if (task.occursOn(date)) {
-                            count++;
-                            System.out.println("     " + count + "." + task);
-                        }
-                    }
-                    break;
-                }
-                default:
-                    throw new BotException(
-                            "OOPS!!! I don't understand \"" + commandWord
-                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.");
-                }
-            } catch (BotException e) {
-                System.out.println("     " + e.getMessage());
-            }
-
+            executeCommand(input, tasks);
             System.out.println(DIVIDER);
             input = scanner.nextLine();
         }
+        scanner.close();
+    }
 
+    /**
+     * Parses one line of user input into a command word and its argument
+     * text, and carries out whichever command it names against
+     * {@code tasks}. Any problem with the command (unrecognized word,
+     * missing/malformed argument, bad task number) is reported as an
+     * "OOPS!!!" message instead of propagating further.
+     */
+    private static void executeCommand(String input, List<Task> tasks) {
+        String[] parts = input.split(" ", 2);
+        String commandWord = parts[0];
+        String rest = (parts.length > 1) ? parts[1] : "";
+
+        try {
+            switch (commandWord) {
+            case "list":
+                System.out.println("     Here are the tasks in your list:");
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println("     " + (i + 1) + "." + tasks.get(i));
+                }
+                break;
+            case "mark": {
+                int index = parseTaskIndex(rest, "mark", tasks.size());
+                tasks.get(index).markAsDone();
+                System.out.println("     Nice! I've marked this task as done:");
+                System.out.println("       " + tasks.get(index));
+                saveTasks(tasks);
+                break;
+            }
+            case "unmark": {
+                int index = parseTaskIndex(rest, "unmark", tasks.size());
+                tasks.get(index).markAsNotDone();
+                System.out.println("     OK, I've marked this task as not done yet:");
+                System.out.println("       " + tasks.get(index));
+                saveTasks(tasks);
+                break;
+            }
+            case "delete": {
+                int index = parseTaskIndex(rest, "delete", tasks.size());
+                Task removed = tasks.remove(index);
+                printRemoved(removed, tasks.size());
+                saveTasks(tasks);
+                break;
+            }
+            case "todo": {
+                tasks.add(parseTodo(rest));
+                printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                saveTasks(tasks);
+                break;
+            }
+            case "deadline": {
+                tasks.add(parseDeadline(rest));
+                printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                saveTasks(tasks);
+                break;
+            }
+            case "event": {
+                tasks.add(parseEvent(rest));
+                printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                saveTasks(tasks);
+                break;
+            }
+            case "on": {
+                LocalDate date = parseOnDate(rest);
+                System.out.println("     Here are the tasks on " + TaskDateTime.formatDateOnly(date) + ":");
+                int count = 0;
+                for (Task task : tasks) {
+                    if (task.occursOn(date)) {
+                        count++;
+                        System.out.println("     " + count + "." + task);
+                    }
+                }
+                break;
+            }
+            default:
+                throw new BotException(
+                        "OOPS!!! I don't understand \"" + commandWord
+                                + "\" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.");
+            }
+        } catch (BotException e) {
+            System.out.println("     " + e.getMessage());
+        }
+    }
+
+    private static void printFarewell() {
         System.out.println(DIVIDER);
         System.out.println("     Bye. Hope to see you again soon!");
         System.out.println(DIVIDER);
-
-        scanner.close();
     }
 
     /**
@@ -133,7 +166,7 @@ public class Bot {
      * disk is full or the data folder isn't writable), the user is told
      * but the in-memory task list is left as-is rather than crashing.
      */
-    private static void saveTasks(ArrayList<Task> tasks) {
+    private static void saveTasks(List<Task> tasks) {
         try {
             Storage.save(tasks);
         } catch (BotException e) {
@@ -141,37 +174,49 @@ public class Bot {
         }
     }
 
-    private static void printAdded(Task task, int taskCount) {
+    /**
+     * Prints the shared "here's what changed, here's the task, here's the
+     * new count" structure used by both {@link #printAdded} and
+     * {@link #printRemoved}, so the two only need to supply their own
+     * lead-in line.
+     */
+    private static void printTaskCountUpdate(String leadIn, Task task, int taskCount) {
         String taskWord = (taskCount == 1) ? "task" : "tasks";
-        System.out.println("     Got it. I've added this task:");
+        System.out.println("     " + leadIn);
         System.out.println("       " + task);
         System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
+    }
+
+    private static void printAdded(Task task, int taskCount) {
+        printTaskCountUpdate("Got it. I've added this task:", task, taskCount);
     }
 
     private static void printRemoved(Task task, int taskCount) {
-        String taskWord = (taskCount == 1) ? "task" : "tasks";
-        System.out.println("     Noted. I've removed this task:");
-        System.out.println("       " + task);
-        System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
+        printTaskCountUpdate("Noted. I've removed this task:", task, taskCount);
     }
 
+    /**
+     * Parses a 1-based task number as typed by the user (e.g. the "2" in
+     * "mark 2") and converts it to the corresponding 0-based index into
+     * {@code tasks}.
+     */
     private static int parseTaskIndex(String arg, String commandWord, int taskCount) throws BotException {
         String trimmed = arg.trim();
         if (trimmed.isEmpty()) {
             throw new BotException(
                     "OOPS!!! Tell me which task number to " + commandWord + ", e.g. \"" + commandWord + " 2\".");
         }
-        int index;
+        int taskNumber;
         try {
-            index = Integer.parseInt(trimmed);
+            taskNumber = Integer.parseInt(trimmed);
         } catch (NumberFormatException e) {
             throw new BotException("OOPS!!! \"" + trimmed + "\" isn't a task number - try something like \""
                     + commandWord + " 2\".");
         }
-        if (index < 1 || index > taskCount) {
-            throw new BotException("OOPS!!! There's no task number " + index + " in your list.");
+        if (taskNumber < 1 || taskNumber > taskCount) {
+            throw new BotException("OOPS!!! There's no task number " + taskNumber + " in your list.");
         }
-        return index - 1;
+        return taskNumber - 1;
     }
 
     private static Todo parseTodo(String rest) throws BotException {
