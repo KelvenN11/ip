@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -94,10 +95,22 @@ public class Bot {
                     saveTasks(tasks);
                     break;
                 }
+                case "on": {
+                    LocalDate date = parseOnDate(rest);
+                    System.out.println("     Here are the tasks on " + TaskDateTime.formatDateOnly(date) + ":");
+                    int count = 0;
+                    for (Task task : tasks) {
+                        if (task.occursOn(date)) {
+                            count++;
+                            System.out.println("     " + count + "." + task);
+                        }
+                    }
+                    break;
+                }
                 default:
                     throw new BotException(
                             "OOPS!!! I don't understand \"" + commandWord
-                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, or bye.");
+                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.");
                 }
             } catch (BotException e) {
                 System.out.println("     " + e.getMessage());
@@ -172,18 +185,20 @@ public class Bot {
     private static Deadline parseDeadline(String rest) throws BotException {
         int byIndex = rest.indexOf("/by ");
         if (byIndex == -1) {
-            throw new BotException(
-                    "OOPS!!! A deadline needs a \"/by\" date or time, e.g. \"deadline return book /by Sunday\".");
+            throw new BotException("OOPS!!! A deadline needs a \"/by\" date or time, e.g. "
+                    + "\"deadline return book /by 2019-10-15\" or \"deadline return book /by 2019-10-15 1800\".");
         }
         String description = rest.substring(0, byIndex).trim();
         String by = rest.substring(byIndex + 4).trim();
         if (description.isEmpty()) {
-            throw new BotException("OOPS!!! A deadline needs a description, e.g. \"deadline return book /by Sunday\".");
+            throw new BotException("OOPS!!! A deadline needs a description, e.g. "
+                    + "\"deadline return book /by 2019-10-15\".");
         }
         if (by.isEmpty()) {
-            throw new BotException("OOPS!!! Tell me the date or time after \"/by\", e.g. \"deadline return book /by Sunday\".");
+            throw new BotException("OOPS!!! Tell me the date or time after \"/by\", e.g. "
+                    + "\"deadline return book /by 2019-10-15\".");
         }
-        return new Deadline(description, by);
+        return new Deadline(description, TaskDateTime.parse(by));
     }
 
     private static Event parseEvent(String rest) throws BotException {
@@ -191,19 +206,27 @@ public class Bot {
         int toIndex = rest.indexOf("/to ");
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
             throw new BotException("OOPS!!! An event needs both \"/from\" and \"/to\", e.g. "
-                    + "\"event project meeting /from Mon 2pm /to 4pm\".");
+                    + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
         }
         String description = rest.substring(0, fromIndex).trim();
         String from = rest.substring(fromIndex + 6, toIndex).trim();
         String to = rest.substring(toIndex + 4).trim();
         if (description.isEmpty()) {
             throw new BotException("OOPS!!! An event needs a description, e.g. "
-                    + "\"event project meeting /from Mon 2pm /to 4pm\".");
+                    + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
         }
         if (from.isEmpty() || to.isEmpty()) {
             throw new BotException("OOPS!!! Tell me both a \"/from\" and \"/to\" date or time, e.g. "
-                    + "\"event project meeting /from Mon 2pm /to 4pm\".");
+                    + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
         }
-        return new Event(description, from, to);
+        return new Event(description, TaskDateTime.parse(from), TaskDateTime.parse(to));
+    }
+
+    private static LocalDate parseOnDate(String rest) throws BotException {
+        String trimmed = rest.trim();
+        if (trimmed.isEmpty()) {
+            throw new BotException("OOPS!!! Tell me which date, e.g. \"on 2019-10-15\".");
+        }
+        return TaskDateTime.parseDateOnly(trimmed);
     }
 }

@@ -81,7 +81,7 @@ public class Storage {
 
     /**
      * Parses one data-file line back into the Task it represents, e.g.
-     * {@code "D | 0 | return book | Sunday"} into an undone Deadline.
+     * {@code "D | 0 | return book | 2019-10-15"} into an undone Deadline.
      * Rejects anything that doesn't match the expected
      * {@code type | done-flag | description [| ...]} shape instead of
      * guessing, so a corrupted line is reported rather than silently
@@ -111,14 +111,14 @@ public class Storage {
             if (parts.length < 4) {
                 throw new BotException("a deadline (\"D\") line needs a 4th field for its \"by\" date/time");
             }
-            task = new Deadline(description, parts[3]);
+            task = new Deadline(description, TaskDateTime.parse(parts[3]));
             break;
         case "E":
             if (parts.length < 5) {
                 throw new BotException(
                         "an event (\"E\") line needs 4th and 5th fields for its \"from\" and \"to\" date/time");
             }
-            task = new Event(description, parts[3], parts[4]);
+            task = new Event(description, TaskDateTime.parse(parts[3]), TaskDateTime.parse(parts[4]));
             break;
         default:
             throw new BotException("unknown task type \"" + type + "\" (expected \"T\", \"D\", or \"E\")");

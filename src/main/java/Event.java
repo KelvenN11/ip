@@ -1,12 +1,14 @@
+import java.time.LocalDate;
+
 /**
  * A task that starts at a specific date/time and ends at a specific date/time.
  */
 public class Event extends Task {
 
-    protected String from;
-    protected String to;
+    protected TaskDateTime from;
+    protected TaskDateTime to;
 
-    public Event(String description, String from, String to) {
+    public Event(String description, TaskDateTime from, TaskDateTime to) {
         super(description);
         this.from = from;
         this.to = to;
@@ -19,6 +21,12 @@ public class Event extends Task {
 
     @Override
     public String toSaveFormat() {
-        return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + from + " | " + to;
+        return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + from.toSaveFormat() + " | "
+                + to.toSaveFormat();
+    }
+
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return !date.isBefore(from.toLocalDate()) && !date.isAfter(to.toLocalDate());
     }
 }

@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 /**
  * Represents a task with a description and a done/not-done status.
  */
@@ -33,4 +35,13 @@ public abstract class Task {
      * subclass supplies its own type letter and any extra fields.
      */
     public abstract String toSaveFormat();
+
+    /**
+     * Returns whether this task falls on the given calendar date, used by
+     * the {@code on} command. A task with no date attached (a Todo) never
+     * matches; Deadline and Event override this with their own dates.
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
+    }
 }
