@@ -98,15 +98,18 @@ bye
 
 ## Test Case 3: Add a todo, a deadline, and an event, then list them
 
-**Aim:** Each of the three task types is added with the correct type icon,
-date/time text, and running task count, and `list` shows them numbered in
-insertion order.
+**Aim:** Each of the three task types is added with the correct type icon
+and running task count. The deadline/event dates are understood as real
+dates (Level 8), not opaque text: entered as `yyyy-MM-dd` (deadline) or
+`yyyy-MM-dd HHmm` (event, date + 24-hour time), they're displayed in
+`MMM dd yyyy` / `MMM dd yyyy, h:mma` form, and `list` shows them numbered
+in insertion order.
 
 **Input:**
 ```
 todo borrow book
-deadline return book /by Sunday
-event project meeting /from Mon 2pm /to 4pm
+deadline return book /by 2019-10-15
+event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600
 list
 bye
 ```
@@ -129,19 +132,19 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      Got it. I've added this task:
-       [D][ ] return book (by: Sunday)
+       [D][ ] return book (by: Oct 15 2019)
      Now you have 2 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
      Got it. I've added this task:
-       [E][ ] project meeting (from: Mon 2pm to: 4pm)
+       [E][ ] project meeting (from: Oct 15 2019, 2:00PM to: Oct 15 2019, 4:00PM)
      Now you have 3 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
      Here are the tasks in your list:
      1.[T][ ] borrow book
-     2.[D][ ] return book (by: Sunday)
-     3.[E][ ] project meeting (from: Mon 2pm to: 4pm)
+     2.[D][ ] return book (by: Oct 15 2019)
+     3.[E][ ] project meeting (from: Oct 15 2019, 2:00PM to: Oct 15 2019, 4:00PM)
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!
@@ -212,15 +215,16 @@ bye
 ## Test Case 5: Error handling for invalid input
 
 **Aim:** An unrecognized command word, a todo/deadline/event with a missing
-or malformed argument, and a mark/delete with a missing/non-numeric/
-out-of-range index each produce a specific "OOPS!!!" message (via
-`BotException`) instead of crashing or silently doing nothing, and no
-task is added, changed, or removed as a result — the trailing `list`
-confirms the task collection is still empty after every failed command.
-`mark`, `unmark`, and `delete` all validate their index through the same
-`parseTaskIndex` helper, so exercising it via `mark` and `delete` here is
-taken as sufficient coverage for `unmark` too, rather than repeating the
-same three cases a third time.
+or malformed argument, a deadline/event/`on` with a date string that isn't
+valid `yyyy-MM-dd`(` HHmm`) (Level 8), and a mark/delete with a
+missing/non-numeric/out-of-range index each produce a specific "OOPS!!!"
+message (via `BotException`) instead of crashing or silently doing
+nothing, and no task is added, changed, or removed as a result — the
+trailing `list` confirms the task collection is still empty after every
+failed command. `mark`, `unmark`, and `delete` all validate their index
+through the same `parseTaskIndex` helper, so exercising it via `mark` and
+`delete` here is taken as sufficient coverage for `unmark` too, rather
+than repeating the same three cases a third time.
 
 **Input:**
 ```
@@ -228,14 +232,18 @@ blah
 todo
 deadline
 deadline return book
+deadline return book /by notadate
 event
-event meeting /from Mon
+event meeting /from 2019-10-15 1400
+event meeting /from 2019-10-15 1400 /to notadate
 mark
 mark abc
 mark 1
 delete
 delete abc
 delete 1
+on
+on notadate
 list
 bye
 ```
@@ -252,22 +260,28 @@ bye
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, or bye.
+     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! A todo needs a description, e.g. "todo borrow book".
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! A deadline needs a "/by" date or time, e.g. "deadline return book /by Sunday".
+     OOPS!!! A deadline needs a "/by" date or time, e.g. "deadline return book /by 2019-10-15" or "deadline return book /by 2019-10-15 1800".
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! A deadline needs a "/by" date or time, e.g. "deadline return book /by Sunday".
+     OOPS!!! A deadline needs a "/by" date or time, e.g. "deadline return book /by 2019-10-15" or "deadline return book /by 2019-10-15 1800".
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! An event needs both "/from" and "/to", e.g. "event project meeting /from Mon 2pm /to 4pm".
+     OOPS!!! "notadate" isn't a date I understand - use yyyy-MM-dd (e.g. 2019-10-15) or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! An event needs both "/from" and "/to", e.g. "event project meeting /from Mon 2pm /to 4pm".
+     OOPS!!! An event needs both "/from" and "/to", e.g. "event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! An event needs both "/from" and "/to", e.g. "event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! "notadate" isn't a date I understand - use yyyy-MM-dd (e.g. 2019-10-15) or yyyy-MM-dd HHmm (e.g. 2019-10-15 1800).
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! Tell me which task number to mark, e.g. "mark 2".
@@ -288,6 +302,12 @@ bye
      OOPS!!! There's no task number 1 in your list.
     ____________________________________________________________
     ____________________________________________________________
+     OOPS!!! Tell me which date, e.g. "on 2019-10-15".
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! "notadate" isn't a date I understand - use yyyy-MM-dd (e.g. 2019-10-15).
+    ____________________________________________________________
+    ____________________________________________________________
      Here are the tasks in your list:
     ____________________________________________________________
     ____________________________________________________________
@@ -304,8 +324,8 @@ tasks renumbered with no gap left by the deleted task.
 **Input:**
 ```
 todo read book
-deadline return book /by June 6th
-event project meeting /from Aug 6th 2pm /to 4pm
+deadline return book /by 2019-06-06
+event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600
 todo join sports club
 todo borrow book
 mark 1
@@ -335,12 +355,12 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      Got it. I've added this task:
-       [D][ ] return book (by: June 6th)
+       [D][ ] return book (by: Jun 06 2019)
      Now you have 2 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
      Got it. I've added this task:
-       [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+       [E][ ] project meeting (from: Aug 06 2019, 2:00PM to: Aug 06 2019, 4:00PM)
      Now you have 3 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
@@ -359,7 +379,7 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      Nice! I've marked this task as done:
-       [D][X] return book (by: June 6th)
+       [D][X] return book (by: Jun 06 2019)
     ____________________________________________________________
     ____________________________________________________________
      Nice! I've marked this task as done:
@@ -368,20 +388,20 @@ bye
     ____________________________________________________________
      Here are the tasks in your list:
      1.[T][X] read book
-     2.[D][X] return book (by: June 6th)
-     3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     2.[D][X] return book (by: Jun 06 2019)
+     3.[E][ ] project meeting (from: Aug 06 2019, 2:00PM to: Aug 06 2019, 4:00PM)
      4.[T][X] join sports club
      5.[T][ ] borrow book
     ____________________________________________________________
     ____________________________________________________________
      Noted. I've removed this task:
-       [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+       [E][ ] project meeting (from: Aug 06 2019, 2:00PM to: Aug 06 2019, 4:00PM)
      Now you have 4 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
      Here are the tasks in your list:
      1.[T][X] read book
-     2.[D][X] return book (by: June 6th)
+     2.[D][X] return book (by: Jun 06 2019)
      3.[T][X] join sports club
      4.[T][ ] borrow book
     ____________________________________________________________
@@ -396,7 +416,10 @@ bye
 to `./data/bot.txt`, and a later run of the program (started fresh,
 without deleting that file) loads them back with the same description,
 type, and done status, per Level 7's save-on-change / load-on-startup
-behavior.
+behavior. This also covers Level 8: the deadline's date round-trips
+through the data file and displays the same way (`Jun 06 2019`) in both
+sessions, confirming it's saved/reloaded as a real date rather than as
+whatever text was typed.
 
 **Setup:** Delete `./data` if present before Session 1, so Session 1
 starts with no saved tasks. Do NOT delete or reset `./data` between
@@ -405,7 +428,7 @@ Session 1 and Session 2 — Session 2 must see whatever Session 1 saved.
 **Session 1 Input:**
 ```
 todo read book
-deadline return book /by June 6th
+deadline return book /by 2019-06-06
 mark 1
 bye
 ```
@@ -428,7 +451,7 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      Got it. I've added this task:
-       [D][ ] return book (by: June 6th)
+       [D][ ] return book (by: Jun 06 2019)
      Now you have 2 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
@@ -460,7 +483,7 @@ bye
     ____________________________________________________________
      Here are the tasks in your list:
      1.[T][X] read book
-     2.[D][ ] return book (by: June 6th)
+     2.[D][ ] return book (by: Jun 06 2019)
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!
@@ -515,6 +538,67 @@ bye
      Here are the tasks in your list:
      1.[T][X] read book
      2.[T][ ] join club
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+## Test Case 9: `on` finds tasks by calendar date
+
+**Aim:** The `on <yyyy-MM-dd>` command (Level 8 stretch goal) lists tasks
+occurring on a given date: a deadline matches only its exact `by` date, an
+event matches any date within its `from`..`to` range (inclusive, even a
+date that's neither endpoint), a date with nothing scheduled prints the
+header with no entries, and a Todo (which has no date) never matches.
+
+**Input:**
+```
+todo pack bags
+deadline return book /by 2019-10-15
+event conference /from 2019-10-16 0900 /to 2019-10-18 1700
+on 2019-10-15
+on 2019-10-17
+on 2019-10-20
+bye
+```
+
+**Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] pack bags
+     Now you have 1 task in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] return book (by: Oct 15 2019)
+     Now you have 2 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] conference (from: Oct 16 2019, 9:00AM to: Oct 18 2019, 5:00PM)
+     Now you have 3 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks on Oct 15 2019:
+     1.[D][ ] return book (by: Oct 15 2019)
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks on Oct 17 2019:
+     1.[E][ ] conference (from: Oct 16 2019, 9:00AM to: Oct 18 2019, 5:00PM)
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks on Oct 20 2019:
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!
