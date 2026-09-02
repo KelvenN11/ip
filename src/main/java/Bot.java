@@ -18,7 +18,14 @@ public class Bot {
         System.out.println("     What can I do for you?");
         System.out.println(DIVIDER);
 
-        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Task> tasks;
+        try {
+            tasks = new ArrayList<>(Storage.load());
+        } catch (BotException e) {
+            System.out.println("     " + e.getMessage());
+            System.out.println(DIVIDER);
+            tasks = new ArrayList<>();
+        }
 
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();

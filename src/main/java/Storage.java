@@ -3,6 +3,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,5 +35,56 @@ public class Storage {
         } catch (IOException e) {
             throw new BotException("OOPS!!! I couldn't save your tasks to disk: " + e.getMessage());
         }
+    }
+
+    /**
+     * Loads the task list from the data file. If the file (or its
+     * containing ./data folder) doesn't exist yet, returns an empty list
+     * instead of failing, since that's the normal state the first time
+     * the program runs on a new machine.
+     */
+    public static List<Task> load() throws BotException {
+        List<Task> tasks = new ArrayList<>();
+        if (!Files.exists(DATA_FILE)) {
+            return tasks;
+        }
+        try {
+            for (String line : Files.readAllLines(DATA_FILE)) {
+                tasks.add(parseLine(line));
+            }
+        } catch (IOException e) {
+            throw new BotException("OOPS!!! I couldn't read your saved tasks: " + e.getMessage());
+        }
+        return tasks;
+    }
+
+    /**
+     * Parses one data-file line back into the Task it represents, e.g.
+     * {@code "D | 0 | return book | Sunday"} into an undone Deadline.
+     */
+    private static Task parseLine(String line) throws BotException {
+        String[] parts = line.split(" \\| ");
+        String type = parts[0];
+        boolean isDone = parts[1].equals("1");
+        String description = parts[2];
+
+        Task task;
+        switch (type) {
+        case "T":
+            task = new Todo(description);
+            break;
+        case "D":
+            task = new Deadline(description, parts[3]);
+            break;
+        case "E":
+            task = new Event(description, parts[3], parts[4]);
+            break;
+        default:
+            task = new Todo(description);
+        }
+        if (isDone) {
+            task.markAsDone();
+        }
+        return task;
     }
 }
