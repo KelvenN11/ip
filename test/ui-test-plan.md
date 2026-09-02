@@ -3,18 +3,41 @@
 This file drives the `test-ui` skill. It records how to build and run the
 program, and the list of test cases the skill executes against it.
 
-Each test case is self-contained: it starts the program fresh, feeds it the
-listed input lines (one per line, in order, as if typed by a user), and
-compares the program's full console output against the expected output.
+Bot saves its task list to `./data/bot.txt` and reloads it on startup (see
+Level 7), so most test cases must start with no leftover data from a
+previous test case or a previous manual run, or their expected output
+(which assumes an empty task list at startup) won't match. A test case
+with a single **Input**/**Expected Output** pair is self-contained: delete
+`./data` first, then start the program fresh, feed it the listed input
+lines (one per line, in order, as if typed by a user), and compare its
+full console output against the expected output. A test case with
+multiple numbered **Session** blocks instead (used for testing
+persistence itself) is exercised across that many separate runs of the
+program *without* deleting `./data` between them, so later sessions see
+what earlier sessions saved — see each such test case's **Setup** note for
+the exact data-file handling it needs.
 
 ## How to run
 
 1. Build: `javac -d out src/main/java/*.java` (run from the repository root).
-2. For each test case, run `java -cp out Bot`, sending the test case's
-   **Input** lines to standard input in order (one command per line).
-3. Compare the program's actual standard output, verbatim, against the test
-   case's **Expected Output** block. A trailing newline difference at the
-   very end of output is not considered a mismatch; anything else is.
+2. For each test case:
+   a. Follow its **Setup** note, if it has one (typically: delete `./data`
+      if present; a corrupted-file test case instead writes specific
+      content to `./data/bot.txt` before running). A test case with no
+      **Setup** note still needs `./data` deleted first, per the note
+      above.
+   b. For a single **Input**/**Expected Output** pair, run `java -cp out
+      Bot` once, sending the **Input** lines to standard input in order
+      (one command per line).
+   c. For numbered **Session** blocks, run `java -cp out Bot` once per
+      session, in order, each time sending that session's **Input** lines
+      to standard input — but do NOT delete or reset `./data` between
+      sessions within the same test case, since the point is to check
+      that state carries over.
+3. Compare the program's actual standard output for each run, verbatim,
+   against that run's **Expected Output** block. A trailing newline
+   difference at the very end of output is not considered a mismatch;
+   anything else is.
 4. Run test cases in the order listed below. Stop at the first failure.
 
 ## Test Case 1: Greet and exit
@@ -361,6 +384,137 @@ bye
      2.[D][X] return book (by: June 6th)
      3.[T][X] join sports club
      4.[T][ ] borrow book
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+## Test Case 7: Tasks persist across a restart
+
+**Aim:** Tasks added and marked done in one run of the program are saved
+to `./data/bot.txt`, and a later run of the program (started fresh,
+without deleting that file) loads them back with the same description,
+type, and done status, per Level 7's save-on-change / load-on-startup
+behavior.
+
+**Setup:** Delete `./data` if present before Session 1, so Session 1
+starts with no saved tasks. Do NOT delete or reset `./data` between
+Session 1 and Session 2 — Session 2 must see whatever Session 1 saved.
+
+**Session 1 Input:**
+```
+todo read book
+deadline return book /by June 6th
+mark 1
+bye
+```
+
+**Session 1 Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] read book
+     Now you have 1 task in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] return book (by: June 6th)
+     Now you have 2 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Nice! I've marked this task as done:
+       [T][X] read book
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+**Session 2 Input:**
+```
+list
+bye
+```
+
+**Session 2 Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] read book
+     2.[D][ ] return book (by: June 6th)
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+## Test Case 8: Corrupted data file is reported and partially recovered
+
+**Aim:** If `./data/bot.txt` contains lines that don't match the expected
+format (bad task-type letter, bad done flag, missing fields), the program
+still starts up, reports each bad line (with its line number and what was
+wrong with it) instead of crashing, skips only those lines, and keeps
+whatever tasks on other lines parsed correctly — the stretch goal for
+Level 7.
+
+**Setup:** Delete `./data` if present, then create the `./data` directory
+and write exactly the following content to `./data/bot.txt` (six lines,
+mixing two well-formed tasks with four malformed ones):
+```
+T | 1 | read book
+X | 0 | bad type
+D | 0 | return book
+T | 2 | bad done flag
+notenoughfields
+T | 0 | join club
+```
+
+**Input:**
+```
+list
+bye
+```
+
+**Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+     Note: some saved tasks were skipped because the data file looks corrupted:
+       - line 2: unknown task type "X" (expected "T", "D", or "E")
+       - line 3: a deadline ("D") line needs a 4th field for its "by" date/time
+       - line 4: done flag must be "0" or "1", found "2"
+       - line 5: expected at least 3 fields separated by " | " (type, done flag, description), found 1
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][X] read book
+     2.[T][ ] join club
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!

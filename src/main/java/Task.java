@@ -1,7 +1,7 @@
 /**
  * Represents a task with a description and a done/not-done status.
  */
-public class Task {
+public abstract class Task {
     protected String description;
     protected boolean isDone;
 
@@ -26,4 +26,11 @@ public class Task {
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
     }
+
+    /**
+     * Returns this task's representation for the data file, as a single
+     * pipe-separated line (e.g. {@code "T | 1 | read book"}). Each
+     * subclass supplies its own type letter and any extra fields.
+     */
+    public abstract String toSaveFormat();
 }

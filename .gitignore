@@ -3,6 +3,9 @@
 /out/
 /*.iml
 
+# Bot's saved task data (generated at runtime, not source)
+/data/
+
 # Gradle build files
 /.gradle/
 /build/

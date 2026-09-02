@@ -18,7 +18,23 @@ public class Bot {
         System.out.println("     What can I do for you?");
         System.out.println(DIVIDER);
 
-        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Task> tasks;
+        ArrayList<String> loadWarnings = new ArrayList<>();
+        try {
+            tasks = new ArrayList<>(Storage.load(loadWarnings));
+        } catch (BotException e) {
+            System.out.println("     " + e.getMessage());
+            System.out.println(DIVIDER);
+            tasks = new ArrayList<>();
+        }
+        if (!loadWarnings.isEmpty()) {
+            System.out.println("     Note: some saved tasks were skipped because the data file looks "
+                    + "corrupted:");
+            for (String warning : loadWarnings) {
+                System.out.println("       - " + warning);
+            }
+            System.out.println(DIVIDER);
+        }
 
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
@@ -42,6 +58,7 @@ public class Bot {
                     tasks.get(index).markAsDone();
                     System.out.println("     Nice! I've marked this task as done:");
                     System.out.println("       " + tasks.get(index));
+                    saveTasks(tasks);
                     break;
                 }
                 case "unmark": {
@@ -49,27 +66,32 @@ public class Bot {
                     tasks.get(index).markAsNotDone();
                     System.out.println("     OK, I've marked this task as not done yet:");
                     System.out.println("       " + tasks.get(index));
+                    saveTasks(tasks);
                     break;
                 }
                 case "delete": {
                     int index = parseTaskIndex(rest, "delete", tasks.size());
                     Task removed = tasks.remove(index);
                     printRemoved(removed, tasks.size());
+                    saveTasks(tasks);
                     break;
                 }
                 case "todo": {
                     tasks.add(parseTodo(rest));
                     printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                    saveTasks(tasks);
                     break;
                 }
                 case "deadline": {
                     tasks.add(parseDeadline(rest));
                     printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                    saveTasks(tasks);
                     break;
                 }
                 case "event": {
                     tasks.add(parseEvent(rest));
                     printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                    saveTasks(tasks);
                     break;
                 }
                 default:
@@ -90,6 +112,20 @@ public class Bot {
         System.out.println(DIVIDER);
 
         scanner.close();
+    }
+
+    /**
+     * Persists the current task list to disk, so the change just made
+     * survives a restart. Saving is best-effort: if it fails (e.g. the
+     * disk is full or the data folder isn't writable), the user is told
+     * but the in-memory task list is left as-is rather than crashing.
+     */
+    private static void saveTasks(ArrayList<Task> tasks) {
+        try {
+            Storage.save(tasks);
+        } catch (BotException e) {
+            System.out.println("     " + e.getMessage());
+        }
     }
 
     private static void printAdded(Task task, int taskCount) {
