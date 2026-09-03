@@ -23,6 +23,11 @@ public class TaskList {
         this.tasks = new ArrayList<>(tasks);
     }
 
+    /**
+     * Adds a task to the end of the list.
+     *
+     * @param task The task to add.
+     */
     public void add(Task task) {
         tasks.add(task);
     }
@@ -40,23 +45,33 @@ public class TaskList {
         return tasks.size();
     }
 
+    /**
+     * Marks the task at the given 0-based index as done.
+     *
+     * @param index The 0-based index of the task to mark.
+     */
     public void mark(int index) {
         tasks.get(index).markAsDone();
     }
 
+    /**
+     * Marks the task at the given 0-based index as not done.
+     *
+     * @param index The 0-based index of the task to unmark.
+     */
     public void unmark(int index) {
         tasks.get(index).markAsNotDone();
     }
 
     /** The tasks occurring on the given date, in list order, for the {@code on} command. */
     public List<Task> tasksOn(LocalDate date) {
-        List<Task> matching = new ArrayList<>();
+        List<Task> matchingTasks = new ArrayList<>();
         for (Task task : tasks) {
             if (task.occursOn(date)) {
-                matching.add(task);
+                matchingTasks.add(task);
             }
         }
-        return matching;
+        return matchingTasks;
     }
 
     /** A read-only view of every task in the list, in order - for {@code list} and for saving to disk. */

@@ -11,6 +11,12 @@ public class Deadline extends Task {
 
     protected TaskDateTime by;
 
+    /**
+     * Creates a new, not-done deadline with the given description and due date/time.
+     *
+     * @param description The deadline's description text.
+     * @param by The date (and optionally time) the task is due by.
+     */
     public Deadline(String description, TaskDateTime by) {
         super(description);
         this.by = by;

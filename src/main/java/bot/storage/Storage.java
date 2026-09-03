@@ -30,6 +30,11 @@ import bot.task.Todo;
 public class Storage {
     private final Path dataFile;
 
+    /**
+     * Creates a Storage backed by the data file at the given path.
+     *
+     * @param filePath The relative path to the data file, e.g. {@code "data/bot.txt"}.
+     */
     public Storage(String filePath) {
         this.dataFile = Paths.get(filePath);
     }
@@ -122,24 +127,24 @@ public class Storage {
 
         Task task;
         switch (type) {
-        case "T":
-            task = new Todo(description);
-            break;
-        case "D":
-            if (parts.length < 4) {
-                throw new BotException("a deadline (\"D\") line needs a 4th field for its \"by\" date/time");
-            }
-            task = new Deadline(description, TaskDateTime.parse(parts[3]));
-            break;
-        case "E":
-            if (parts.length < 5) {
-                throw new BotException(
-                        "an event (\"E\") line needs 4th and 5th fields for its \"from\" and \"to\" date/time");
-            }
-            task = new Event(description, TaskDateTime.parse(parts[3]), TaskDateTime.parse(parts[4]));
-            break;
-        default:
-            throw new BotException("unknown task type \"" + type + "\" (expected \"T\", \"D\", or \"E\")");
+            case "T":
+                task = new Todo(description);
+                break;
+            case "D":
+                if (parts.length < 4) {
+                    throw new BotException("a deadline (\"D\") line needs a 4th field for its \"by\" date/time");
+                }
+                task = new Deadline(description, TaskDateTime.parse(parts[3]));
+                break;
+            case "E":
+                if (parts.length < 5) {
+                    throw new BotException(
+                            "an event (\"E\") line needs 4th and 5th fields for its \"from\" and \"to\" date/time");
+                }
+                task = new Event(description, TaskDateTime.parse(parts[3]), TaskDateTime.parse(parts[4]));
+                break;
+            default:
+                throw new BotException("unknown task type \"" + type + "\" (expected \"T\", \"D\", or \"E\")");
         }
         if (isDone) {
             task.markAsDone();

@@ -5,6 +5,11 @@ package bot.task;
  */
 public class Todo extends Task {
 
+    /**
+     * Creates a new, not-done todo with the given description.
+     *
+     * @param description The todo's description text.
+     */
     public Todo(String description) {
         super(description);
     }

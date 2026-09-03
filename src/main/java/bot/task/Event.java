@@ -12,6 +12,13 @@ public class Event extends Task {
     protected TaskDateTime from;
     protected TaskDateTime to;
 
+    /**
+     * Creates a new, not-done event with the given description and start/end date/time.
+     *
+     * @param description The event's description text.
+     * @param from The date (and optionally time) the event starts.
+     * @param to The date (and optionally time) the event ends.
+     */
     public Event(String description, TaskDateTime from, TaskDateTime to) {
         super(description);
         this.from = from;
