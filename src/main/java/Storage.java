@@ -7,27 +7,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Saves the task list to a fixed location on disk so tasks survive between
- * runs of the program.
+ * Saves the task list to, and loads it from, a file on disk so tasks
+ * survive between runs of the program. Which file is used is given once,
+ * as a relative path, when a Storage is constructed - e.g. {@code new
+ * Storage("data/bot.txt")} - rather than being hard-coded inside this
+ * class, so a caller (or a test) can point it at a different file.
  *
- * The data file lives at {@code ./data/bot.txt}, a path relative to
- * wherever the program is run from (never a hard-coded absolute path such
- * as {@code C:\data}) and built with {@link Paths#get}, so it uses the
- * right separator on every operating system.
+ * A relative path is built with {@link Paths#get}, so it's resolved
+ * against wherever the program is run from and uses the right separator
+ * on any operating system, rather than a hard-coded absolute path such
+ * as {@code C:\data} that would only work on one computer.
  */
 public class Storage {
-    private static final Path DATA_DIRECTORY = Paths.get("data");
-    private static final Path DATA_FILE = DATA_DIRECTORY.resolve("bot.txt");
+    private final Path dataFile;
+
+    public Storage(String filePath) {
+        this.dataFile = Paths.get(filePath);
+    }
 
     /**
      * Writes every task to the data file, one per line, overwriting
-     * whatever was there before. Creates the {@code ./data} directory
+     * whatever was there before. Creates the data file's parent directory
      * first if it does not already exist.
      */
-    public static void save(List<Task> tasks) throws BotException {
+    public void save(List<Task> tasks) throws BotException {
         try {
-            Files.createDirectories(DATA_DIRECTORY);
-            try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(DATA_FILE))) {
+            Path parent = dataFile.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(dataFile))) {
                 for (Task task : tasks) {
                     writer.println(task.toSaveFormat());
                 }
@@ -39,9 +48,9 @@ public class Storage {
 
     /**
      * Loads the task list from the data file. If the file (or its
-     * containing ./data folder) doesn't exist yet, returns an empty list
-     * instead of failing, since that's the normal state the first time
-     * the program runs on a new machine.
+     * containing folder) doesn't exist yet, returns an empty list instead
+     * of failing, since that's the normal state the first time the
+     * program runs on a new machine.
      *
      * <p>The file may have been hand-edited or corrupted since it was last
      * written, so each line is parsed independently: a malformed line is
@@ -54,14 +63,14 @@ public class Storage {
      * @throws BotException if the file exists but can't be read at all,
      *         e.g. due to a permissions problem
      */
-    public static List<Task> load(List<String> warnings) throws BotException {
+    public List<Task> load(List<String> warnings) throws BotException {
         List<Task> tasks = new ArrayList<>();
-        if (!Files.exists(DATA_FILE)) {
+        if (!Files.exists(dataFile)) {
             return tasks;
         }
         List<String> lines;
         try {
-            lines = Files.readAllLines(DATA_FILE);
+            lines = Files.readAllLines(dataFile);
         } catch (IOException e) {
             throw new BotException("OOPS!!! I couldn't read your saved tasks: " + e.getMessage());
         }
@@ -87,7 +96,7 @@ public class Storage {
      * guessing, so a corrupted line is reported rather than silently
      * misread.
      */
-    private static Task parseLine(String line) throws BotException {
+    private Task parseLine(String line) throws BotException {
         String[] parts = line.split(" \\| ");
         if (parts.length < 3) {
             throw new BotException(

@@ -1,147 +1,138 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
+/**
+ * The chatbot's entry point and orchestrator. Bot itself holds no
+ * command-handling logic: it wires together a {@link Ui} (console
+ * interaction), a {@link Storage} (loading/saving the data file), a
+ * {@link TaskList} (the tasks and operations on them), and a
+ * {@link Parser} (interpreting each command line), and its
+ * {@link #run()} loop just calls each of them in turn.
+ */
 public class Bot {
-    private static final String DIVIDER = "    ____________________________________________________________";
-    private static final String NAME = "Bot";
-    private static final String BANNER = " ____   ___  _____ \n"
-            + "| __ ) / _ \\|_   _|\n"
-            + "|  _ \\| | | | | |  \n"
-            + "| |_) | |_| | | |  \n"
-            + "|____/ \\___/  |_|  \n";
+    private final Ui ui;
+    private final Storage storage;
+    private final TaskList tasks;
 
-    public static void main(String[] args) {
-        printWelcome();
-        List<Task> tasks = loadTasks();
-        runCommandLoop(tasks);
-        printFarewell();
-    }
+    /** The saved-task load failure to report once run() starts, or null if loading didn't fail outright. */
+    private final String loadErrorMessage;
 
-    /** Prints the startup banner and greeting. */
-    private static void printWelcome() {
-        System.out.println(DIVIDER);
-        System.out.print(BANNER);
-        System.out.println("     Hello! I'm " + NAME + ".");
-        System.out.println("     What can I do for you?");
-        System.out.println(DIVIDER);
-    }
+    /** Any saved-task lines that couldn't be parsed, to report once run() starts; empty if none. */
+    private final List<String> loadWarnings;
 
     /**
-     * Loads the saved task list from disk (see {@link Storage}), reporting
-     * a load failure or any corrupted lines that had to be skipped. Starts
-     * with an empty list if there's nothing to load or loading failed
-     * outright.
+     * Sets up a Bot backed by the data file at {@code filePath}, loading
+     * whatever tasks are already saved there (or starting with an empty
+     * list if the file doesn't exist yet). Building a Bot has no visible
+     * effect on the console by itself - any load failure or corrupted
+     * line found here is only reported once {@link #run()} starts, so
+     * construction and the order things are printed in stay independent
+     * of each other.
      */
-    private static List<Task> loadTasks() {
-        ArrayList<Task> tasks;
-        ArrayList<String> loadWarnings = new ArrayList<>();
+    public Bot(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+
+        List<Task> loaded;
+        List<String> warnings = new ArrayList<>();
+        String errorMessage = null;
         try {
-            tasks = new ArrayList<>(Storage.load(loadWarnings));
+            loaded = storage.load(warnings);
         } catch (BotException e) {
-            System.out.println("     " + e.getMessage());
-            System.out.println(DIVIDER);
-            tasks = new ArrayList<>();
+            errorMessage = e.getMessage();
+            loaded = new ArrayList<>();
         }
-        if (!loadWarnings.isEmpty()) {
-            System.out.println("     Note: some saved tasks were skipped because the data file looks "
-                    + "corrupted:");
-            for (String warning : loadWarnings) {
-                System.out.println("       - " + warning);
-            }
-            System.out.println(DIVIDER);
+        loadErrorMessage = errorMessage;
+        loadWarnings = warnings;
+        tasks = new TaskList(loaded);
+    }
+
+    /** Greets the user, reports any loading trouble, processes commands until "bye", then says goodbye. */
+    public void run() {
+        ui.showWelcome();
+        if (loadErrorMessage != null) {
+            ui.showLoadingError(loadErrorMessage);
         }
-        return tasks;
+        ui.showLoadWarnings(loadWarnings);
+        runCommandLoop();
+        ui.showFarewell();
+        ui.close();
     }
 
     /**
      * Reads one line of user input at a time and executes it as a command,
      * until the user types "bye".
      */
-    private static void runCommandLoop(List<Task> tasks) {
-        Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
+    private void runCommandLoop() {
+        String input = ui.readCommand();
         while (!input.equals("bye")) {
-            System.out.println(DIVIDER);
-            executeCommand(input, tasks);
-            System.out.println(DIVIDER);
-            input = scanner.nextLine();
+            ui.showLine();
+            executeCommand(input);
+            ui.showLine();
+            input = ui.readCommand();
         }
-        scanner.close();
     }
 
     /**
      * Parses one line of user input into a command word and its argument
-     * text, and carries out whichever command it names against
-     * {@code tasks}. Any problem with the command (unrecognized word,
-     * missing/malformed argument, bad task number) is reported as an
-     * "OOPS!!!" message instead of propagating further.
+     * text (via {@link Parser}), and carries out whichever command it
+     * names against the task list. Any problem with the command
+     * (unrecognized word, missing/malformed argument, bad task number) is
+     * reported as an "OOPS!!!" message instead of propagating further.
      */
-    private static void executeCommand(String input, List<Task> tasks) {
-        String[] parts = input.split(" ", 2);
-        String commandWord = parts[0];
-        String rest = (parts.length > 1) ? parts[1] : "";
+    private void executeCommand(String input) {
+        Parser.ParsedCommand command = Parser.parseCommand(input);
+        String commandWord = command.commandWord();
+        String rest = command.arguments();
 
         try {
             switch (commandWord) {
             case "list":
-                System.out.println("     Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println("     " + (i + 1) + "." + tasks.get(i));
-                }
+                ui.showTaskList(tasks.asList());
                 break;
             case "mark": {
-                int index = parseTaskIndex(rest, "mark", tasks.size());
-                tasks.get(index).markAsDone();
-                System.out.println("     Nice! I've marked this task as done:");
-                System.out.println("       " + tasks.get(index));
-                saveTasks(tasks);
+                int index = Parser.parseTaskIndex(rest, "mark", tasks.size());
+                tasks.mark(index);
+                ui.showMarked(tasks.get(index));
+                saveTasks();
                 break;
             }
             case "unmark": {
-                int index = parseTaskIndex(rest, "unmark", tasks.size());
-                tasks.get(index).markAsNotDone();
-                System.out.println("     OK, I've marked this task as not done yet:");
-                System.out.println("       " + tasks.get(index));
-                saveTasks(tasks);
+                int index = Parser.parseTaskIndex(rest, "unmark", tasks.size());
+                tasks.unmark(index);
+                ui.showUnmarked(tasks.get(index));
+                saveTasks();
                 break;
             }
             case "delete": {
-                int index = parseTaskIndex(rest, "delete", tasks.size());
-                Task removed = tasks.remove(index);
-                printRemoved(removed, tasks.size());
-                saveTasks(tasks);
+                int index = Parser.parseTaskIndex(rest, "delete", tasks.size());
+                Task removed = tasks.delete(index);
+                ui.showRemoved(removed, tasks.size());
+                saveTasks();
                 break;
             }
             case "todo": {
-                tasks.add(parseTodo(rest));
-                printAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks(tasks);
+                tasks.add(Parser.parseTodo(rest));
+                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
+                saveTasks();
                 break;
             }
             case "deadline": {
-                tasks.add(parseDeadline(rest));
-                printAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks(tasks);
+                tasks.add(Parser.parseDeadline(rest));
+                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
+                saveTasks();
                 break;
             }
             case "event": {
-                tasks.add(parseEvent(rest));
-                printAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks(tasks);
+                tasks.add(Parser.parseEvent(rest));
+                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
+                saveTasks();
                 break;
             }
             case "on": {
-                LocalDate date = parseOnDate(rest);
-                System.out.println("     Here are the tasks on " + TaskDateTime.formatDateOnly(date) + ":");
-                int count = 0;
-                for (Task task : tasks) {
-                    if (task.occursOn(date)) {
-                        count++;
-                        System.out.println("     " + count + "." + task);
-                    }
-                }
+                LocalDate date = Parser.parseOnDate(rest);
+                ui.showTasksOnDate(date, tasks.tasksOn(date));
                 break;
             }
             default:
@@ -150,14 +141,8 @@ public class Bot {
                                 + "\" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.");
             }
         } catch (BotException e) {
-            System.out.println("     " + e.getMessage());
+            ui.showError(e.getMessage());
         }
-    }
-
-    private static void printFarewell() {
-        System.out.println(DIVIDER);
-        System.out.println("     Bye. Hope to see you again soon!");
-        System.out.println(DIVIDER);
     }
 
     /**
@@ -166,112 +151,15 @@ public class Bot {
      * disk is full or the data folder isn't writable), the user is told
      * but the in-memory task list is left as-is rather than crashing.
      */
-    private static void saveTasks(List<Task> tasks) {
+    private void saveTasks() {
         try {
-            Storage.save(tasks);
+            storage.save(tasks.asList());
         } catch (BotException e) {
-            System.out.println("     " + e.getMessage());
+            ui.showError(e.getMessage());
         }
     }
 
-    /**
-     * Prints the shared "here's what changed, here's the task, here's the
-     * new count" structure used by both {@link #printAdded} and
-     * {@link #printRemoved}, so the two only need to supply their own
-     * lead-in line.
-     */
-    private static void printTaskCountUpdate(String leadIn, Task task, int taskCount) {
-        String taskWord = (taskCount == 1) ? "task" : "tasks";
-        System.out.println("     " + leadIn);
-        System.out.println("       " + task);
-        System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
-    }
-
-    private static void printAdded(Task task, int taskCount) {
-        printTaskCountUpdate("Got it. I've added this task:", task, taskCount);
-    }
-
-    private static void printRemoved(Task task, int taskCount) {
-        printTaskCountUpdate("Noted. I've removed this task:", task, taskCount);
-    }
-
-    /**
-     * Parses a 1-based task number as typed by the user (e.g. the "2" in
-     * "mark 2") and converts it to the corresponding 0-based index into
-     * {@code tasks}.
-     */
-    private static int parseTaskIndex(String arg, String commandWord, int taskCount) throws BotException {
-        String trimmed = arg.trim();
-        if (trimmed.isEmpty()) {
-            throw new BotException(
-                    "OOPS!!! Tell me which task number to " + commandWord + ", e.g. \"" + commandWord + " 2\".");
-        }
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(trimmed);
-        } catch (NumberFormatException e) {
-            throw new BotException("OOPS!!! \"" + trimmed + "\" isn't a task number - try something like \""
-                    + commandWord + " 2\".");
-        }
-        if (taskNumber < 1 || taskNumber > taskCount) {
-            throw new BotException("OOPS!!! There's no task number " + taskNumber + " in your list.");
-        }
-        return taskNumber - 1;
-    }
-
-    private static Todo parseTodo(String rest) throws BotException {
-        String description = rest.trim();
-        if (description.isEmpty()) {
-            throw new BotException("OOPS!!! A todo needs a description, e.g. \"todo borrow book\".");
-        }
-        return new Todo(description);
-    }
-
-    private static Deadline parseDeadline(String rest) throws BotException {
-        int byIndex = rest.indexOf("/by ");
-        if (byIndex == -1) {
-            throw new BotException("OOPS!!! A deadline needs a \"/by\" date or time, e.g. "
-                    + "\"deadline return book /by 2019-10-15\" or \"deadline return book /by 2019-10-15 1800\".");
-        }
-        String description = rest.substring(0, byIndex).trim();
-        String by = rest.substring(byIndex + 4).trim();
-        if (description.isEmpty()) {
-            throw new BotException("OOPS!!! A deadline needs a description, e.g. "
-                    + "\"deadline return book /by 2019-10-15\".");
-        }
-        if (by.isEmpty()) {
-            throw new BotException("OOPS!!! Tell me the date or time after \"/by\", e.g. "
-                    + "\"deadline return book /by 2019-10-15\".");
-        }
-        return new Deadline(description, TaskDateTime.parse(by));
-    }
-
-    private static Event parseEvent(String rest) throws BotException {
-        int fromIndex = rest.indexOf("/from ");
-        int toIndex = rest.indexOf("/to ");
-        if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-            throw new BotException("OOPS!!! An event needs both \"/from\" and \"/to\", e.g. "
-                    + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
-        }
-        String description = rest.substring(0, fromIndex).trim();
-        String from = rest.substring(fromIndex + 6, toIndex).trim();
-        String to = rest.substring(toIndex + 4).trim();
-        if (description.isEmpty()) {
-            throw new BotException("OOPS!!! An event needs a description, e.g. "
-                    + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
-        }
-        if (from.isEmpty() || to.isEmpty()) {
-            throw new BotException("OOPS!!! Tell me both a \"/from\" and \"/to\" date or time, e.g. "
-                    + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
-        }
-        return new Event(description, TaskDateTime.parse(from), TaskDateTime.parse(to));
-    }
-
-    private static LocalDate parseOnDate(String rest) throws BotException {
-        String trimmed = rest.trim();
-        if (trimmed.isEmpty()) {
-            throw new BotException("OOPS!!! Tell me which date, e.g. \"on 2019-10-15\".");
-        }
-        return TaskDateTime.parseDateOnly(trimmed);
+    public static void main(String[] args) {
+        new Bot("data/bot.txt").run();
     }
 }
