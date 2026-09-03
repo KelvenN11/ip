@@ -2,46 +2,73 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The chatbot's entry point and orchestrator. Bot itself holds no
+ * command-handling logic: it wires together a {@link Ui} (console
+ * interaction), a {@link Storage} (loading/saving the data file), a
+ * {@link TaskList} (the tasks and operations on them), and a
+ * {@link Parser} (interpreting each command line), and its
+ * {@link #run()} loop just calls each of them in turn.
+ */
 public class Bot {
-    private static final Ui ui = new Ui();
-    private static final Storage storage = new Storage("data/bot.txt");
+    private final Ui ui;
+    private final Storage storage;
+    private final TaskList tasks;
 
-    public static void main(String[] args) {
-        ui.showWelcome();
-        TaskList tasks = loadTasks();
-        runCommandLoop(tasks);
-        ui.showFarewell();
-        ui.close();
-    }
+    /** The saved-task load failure to report once run() starts, or null if loading didn't fail outright. */
+    private final String loadErrorMessage;
+
+    /** Any saved-task lines that couldn't be parsed, to report once run() starts; empty if none. */
+    private final List<String> loadWarnings;
 
     /**
-     * Loads the saved task list from disk (see {@link Storage}), reporting
-     * a load failure or any corrupted lines that had to be skipped. Starts
-     * with an empty list if there's nothing to load or loading failed
-     * outright.
+     * Sets up a Bot backed by the data file at {@code filePath}, loading
+     * whatever tasks are already saved there (or starting with an empty
+     * list if the file doesn't exist yet). Building a Bot has no visible
+     * effect on the console by itself - any load failure or corrupted
+     * line found here is only reported once {@link #run()} starts, so
+     * construction and the order things are printed in stay independent
+     * of each other.
      */
-    private static TaskList loadTasks() {
+    public Bot(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+
         List<Task> loaded;
-        ArrayList<String> loadWarnings = new ArrayList<>();
+        List<String> warnings = new ArrayList<>();
+        String errorMessage = null;
         try {
-            loaded = storage.load(loadWarnings);
+            loaded = storage.load(warnings);
         } catch (BotException e) {
-            ui.showLoadingError(e.getMessage());
+            errorMessage = e.getMessage();
             loaded = new ArrayList<>();
         }
+        loadErrorMessage = errorMessage;
+        loadWarnings = warnings;
+        tasks = new TaskList(loaded);
+    }
+
+    /** Greets the user, reports any loading trouble, processes commands until "bye", then says goodbye. */
+    public void run() {
+        ui.showWelcome();
+        if (loadErrorMessage != null) {
+            ui.showLoadingError(loadErrorMessage);
+        }
         ui.showLoadWarnings(loadWarnings);
-        return new TaskList(loaded);
+        runCommandLoop();
+        ui.showFarewell();
+        ui.close();
     }
 
     /**
      * Reads one line of user input at a time and executes it as a command,
      * until the user types "bye".
      */
-    private static void runCommandLoop(TaskList tasks) {
+    private void runCommandLoop() {
         String input = ui.readCommand();
         while (!input.equals("bye")) {
             ui.showLine();
-            executeCommand(input, tasks);
+            executeCommand(input);
             ui.showLine();
             input = ui.readCommand();
         }
@@ -49,12 +76,12 @@ public class Bot {
 
     /**
      * Parses one line of user input into a command word and its argument
-     * text, and carries out whichever command it names against
-     * {@code tasks}. Any problem with the command (unrecognized word,
-     * missing/malformed argument, bad task number) is reported as an
-     * "OOPS!!!" message instead of propagating further.
+     * text (via {@link Parser}), and carries out whichever command it
+     * names against the task list. Any problem with the command
+     * (unrecognized word, missing/malformed argument, bad task number) is
+     * reported as an "OOPS!!!" message instead of propagating further.
      */
-    private static void executeCommand(String input, TaskList tasks) {
+    private void executeCommand(String input) {
         Parser.ParsedCommand command = Parser.parseCommand(input);
         String commandWord = command.commandWord();
         String rest = command.arguments();
@@ -68,39 +95,39 @@ public class Bot {
                 int index = Parser.parseTaskIndex(rest, "mark", tasks.size());
                 tasks.mark(index);
                 ui.showMarked(tasks.get(index));
-                saveTasks(tasks);
+                saveTasks();
                 break;
             }
             case "unmark": {
                 int index = Parser.parseTaskIndex(rest, "unmark", tasks.size());
                 tasks.unmark(index);
                 ui.showUnmarked(tasks.get(index));
-                saveTasks(tasks);
+                saveTasks();
                 break;
             }
             case "delete": {
                 int index = Parser.parseTaskIndex(rest, "delete", tasks.size());
                 Task removed = tasks.delete(index);
                 ui.showRemoved(removed, tasks.size());
-                saveTasks(tasks);
+                saveTasks();
                 break;
             }
             case "todo": {
                 tasks.add(Parser.parseTodo(rest));
                 ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks(tasks);
+                saveTasks();
                 break;
             }
             case "deadline": {
                 tasks.add(Parser.parseDeadline(rest));
                 ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks(tasks);
+                saveTasks();
                 break;
             }
             case "event": {
                 tasks.add(Parser.parseEvent(rest));
                 ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks(tasks);
+                saveTasks();
                 break;
             }
             case "on": {
@@ -124,11 +151,15 @@ public class Bot {
      * disk is full or the data folder isn't writable), the user is told
      * but the in-memory task list is left as-is rather than crashing.
      */
-    private static void saveTasks(TaskList tasks) {
+    private void saveTasks() {
         try {
             storage.save(tasks.asList());
         } catch (BotException e) {
             ui.showError(e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        new Bot("data/bot.txt").run();
     }
 }
