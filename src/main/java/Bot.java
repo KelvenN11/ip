@@ -7,7 +7,7 @@ public class Bot {
 
     public static void main(String[] args) {
         ui.showWelcome();
-        List<Task> tasks = loadTasks();
+        TaskList tasks = loadTasks();
         runCommandLoop(tasks);
         ui.showFarewell();
         ui.close();
@@ -19,24 +19,24 @@ public class Bot {
      * with an empty list if there's nothing to load or loading failed
      * outright.
      */
-    private static List<Task> loadTasks() {
-        ArrayList<Task> tasks;
+    private static TaskList loadTasks() {
+        List<Task> loaded;
         ArrayList<String> loadWarnings = new ArrayList<>();
         try {
-            tasks = new ArrayList<>(Storage.load(loadWarnings));
+            loaded = Storage.load(loadWarnings);
         } catch (BotException e) {
             ui.showLoadingError(e.getMessage());
-            tasks = new ArrayList<>();
+            loaded = new ArrayList<>();
         }
         ui.showLoadWarnings(loadWarnings);
-        return tasks;
+        return new TaskList(loaded);
     }
 
     /**
      * Reads one line of user input at a time and executes it as a command,
      * until the user types "bye".
      */
-    private static void runCommandLoop(List<Task> tasks) {
+    private static void runCommandLoop(TaskList tasks) {
         String input = ui.readCommand();
         while (!input.equals("bye")) {
             ui.showLine();
@@ -53,7 +53,7 @@ public class Bot {
      * missing/malformed argument, bad task number) is reported as an
      * "OOPS!!!" message instead of propagating further.
      */
-    private static void executeCommand(String input, List<Task> tasks) {
+    private static void executeCommand(String input, TaskList tasks) {
         String[] parts = input.split(" ", 2);
         String commandWord = parts[0];
         String rest = (parts.length > 1) ? parts[1] : "";
@@ -61,25 +61,25 @@ public class Bot {
         try {
             switch (commandWord) {
             case "list":
-                ui.showTaskList(tasks);
+                ui.showTaskList(tasks.asList());
                 break;
             case "mark": {
                 int index = parseTaskIndex(rest, "mark", tasks.size());
-                tasks.get(index).markAsDone();
+                tasks.mark(index);
                 ui.showMarked(tasks.get(index));
                 saveTasks(tasks);
                 break;
             }
             case "unmark": {
                 int index = parseTaskIndex(rest, "unmark", tasks.size());
-                tasks.get(index).markAsNotDone();
+                tasks.unmark(index);
                 ui.showUnmarked(tasks.get(index));
                 saveTasks(tasks);
                 break;
             }
             case "delete": {
                 int index = parseTaskIndex(rest, "delete", tasks.size());
-                Task removed = tasks.remove(index);
+                Task removed = tasks.delete(index);
                 ui.showRemoved(removed, tasks.size());
                 saveTasks(tasks);
                 break;
@@ -104,13 +104,7 @@ public class Bot {
             }
             case "on": {
                 LocalDate date = parseOnDate(rest);
-                List<Task> matching = new ArrayList<>();
-                for (Task task : tasks) {
-                    if (task.occursOn(date)) {
-                        matching.add(task);
-                    }
-                }
-                ui.showTasksOnDate(date, matching);
+                ui.showTasksOnDate(date, tasks.tasksOn(date));
                 break;
             }
             default:
@@ -129,9 +123,9 @@ public class Bot {
      * disk is full or the data folder isn't writable), the user is told
      * but the in-memory task list is left as-is rather than crashing.
      */
-    private static void saveTasks(List<Task> tasks) {
+    private static void saveTasks(TaskList tasks) {
         try {
-            Storage.save(tasks);
+            Storage.save(tasks.asList());
         } catch (BotException e) {
             ui.showError(e.getMessage());
         }
