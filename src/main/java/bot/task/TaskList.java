@@ -83,6 +83,21 @@ public class TaskList {
         return matching;
     }
 
+    /**
+     * The tasks whose description contains {@code keyword}, matched
+     * case-insensitively, in list order, for the {@code find} command.
+     */
+    public List<Task> findByKeyword(String keyword) {
+        List<Task> matching = new ArrayList<>();
+        String needle = keyword.toLowerCase();
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(needle)) {
+                matching.add(task);
+            }
+        }
+        return matching;
+    }
+
     /** A read-only view of every task in the list, in order - for {@code list} and for saving to disk. */
     public List<Task> asList() {
         return List.copyOf(tasks);

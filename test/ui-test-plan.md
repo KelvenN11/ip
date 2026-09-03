@@ -264,7 +264,7 @@ bye
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.
+     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! A todo needs a description, e.g. "todo borrow book".
@@ -603,6 +603,77 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      Here are the tasks on Oct 20 2019:
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+## Test Case 10: `find` searches task descriptions by keyword
+
+**Aim:** The `find <keyword>` command (Level 9) lists tasks whose
+description contains the keyword, matched case-insensitively, keeping
+each match's original type, status, and formatting. A keyword matching
+nothing prints the header with no entries, and a `find` with no keyword
+is rejected with a clear error instead of searching for an empty string.
+
+**Input:**
+```
+todo read book
+deadline return book /by 2019-06-06
+mark 1
+mark 2
+todo join club
+find book
+find xyz
+find
+bye
+```
+
+**Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] read book
+     Now you have 1 task in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] return book (by: Jun 06 2019)
+     Now you have 2 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Nice! I've marked this task as done:
+       [T][X] read book
+    ____________________________________________________________
+    ____________________________________________________________
+     Nice! I've marked this task as done:
+       [D][X] return book (by: Jun 06 2019)
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] join club
+     Now you have 3 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the matching tasks in your list:
+     1.[T][X] read book
+     2.[D][X] return book (by: Jun 06 2019)
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the matching tasks in your list:
+    ____________________________________________________________
+    ____________________________________________________________
+     OOPS!!! Tell me what keyword to search for, e.g. "find book".
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!

@@ -95,6 +95,14 @@ public class Ui {
         }
     }
 
+    /** Prints the numbered tasks matching a keyword search, for the {@code find} command. */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        System.out.println("     Here are the matching tasks in your list:");
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println("     " + (i + 1) + "." + matchingTasks.get(i));
+        }
+    }
+
     /** Prints the numbered tasks occurring on a date, for the {@code on} command. */
     public void showTasksOnDate(LocalDate date, List<Task> matchingTasks) {
         System.out.println("     Here are the tasks on " + TaskDateTime.formatDateOnly(date) + ":");
