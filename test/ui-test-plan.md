@@ -19,7 +19,11 @@ the exact data-file handling it needs.
 
 ## How to run
 
-1. Build: `javac -d out src/main/java/*.java` (run from the repository root).
+1. Build (run from the repository root): `find src/main/java -name
+   "*.java" | xargs javac -d out`. The source is organized into packages
+   under `src/main/java/bot/...` rather than sitting flat in
+   `src/main/java`, so it must be discovered recursively; a plain
+   `src/main/java/*.java` glob will miss everything in a subpackage.
 2. For each test case:
    a. Follow its **Setup** note, if it has one (typically: delete `./data`
       if present; a corrupted-file test case instead writes specific
@@ -27,13 +31,13 @@ the exact data-file handling it needs.
       **Setup** note still needs `./data` deleted first, per the note
       above.
    b. For a single **Input**/**Expected Output** pair, run `java -cp out
-      Bot` once, sending the **Input** lines to standard input in order
-      (one command per line).
-   c. For numbered **Session** blocks, run `java -cp out Bot` once per
-      session, in order, each time sending that session's **Input** lines
-      to standard input — but do NOT delete or reset `./data` between
-      sessions within the same test case, since the point is to check
-      that state carries over.
+      bot.Bot` once, sending the **Input** lines to standard input in
+      order (one command per line).
+   c. For numbered **Session** blocks, run `java -cp out bot.Bot` once
+      per session, in order, each time sending that session's **Input**
+      lines to standard input — but do NOT delete or reset `./data`
+      between sessions within the same test case, since the point is to
+      check that state carries over.
 3. Compare the program's actual standard output for each run, verbatim,
    against that run's **Expected Output** block. A trailing newline
    difference at the very end of output is not considered a mismatch;

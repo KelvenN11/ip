@@ -1,4 +1,11 @@
+package bot.parser;
+
 import java.time.LocalDate;
+
+import bot.exception.BotException;
+import bot.task.Deadline;
+import bot.task.Event;
+import bot.task.Todo;
 
 /**
  * Makes sense of user commands: splits a raw input line into a command
@@ -6,7 +13,7 @@ import java.time.LocalDate;
  * value each command needs (a new Task, a 0-based task index, or a
  * date). Knows the command grammar (e.g. the "/by", "/from", "/to"
  * markers) but nothing about how tasks are stored or how results are
- * displayed - that stays with {@link TaskList} and {@link Ui}.
+ * displayed - that stays with {@link bot.task.TaskList} and {@link bot.ui.Ui}.
  */
 public class Parser {
 

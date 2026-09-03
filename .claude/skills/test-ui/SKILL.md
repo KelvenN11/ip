@@ -11,7 +11,7 @@ failure.
 
 Bot saves tasks to `./data/bot.txt` and reloads them on startup, so unlike
 a purely in-memory program, state can carry over between separate `java
--cp out Bot` runs via that file. Each test case's **Setup** note (see
+-cp out bot.Bot` runs via that file. Each test case's **Setup** note (see
 `test/ui-test-plan.md`'s "How to run" section for the default when a test
 case has none) says exactly how to handle `./data` before that test case;
 follow it precisely; do not delete `./data` on your own initiative when a
@@ -29,9 +29,11 @@ case (or the default) says to.
      **Expected Output** (multiple program runs sharing one `./data`,
      used to test persistence itself).
 
-2. Build the program fresh:
+2. Build the program fresh (the source is split across packages under
+   `src/main/java/bot/...`, so a flat `*.java` glob won't find every
+   file — discover them recursively instead):
    ```
-   javac -d out src/main/java/*.java
+   find src/main/java -name "*.java" | xargs javac -d out
    ```
    If the build fails, stop and report the compiler error — do not run any
    test cases.
@@ -40,9 +42,9 @@ case (or the default) says to.
    a. Carry out its **Setup** note (deleting `./data`, or writing specific
       content to `./data/bot.txt`, as it directs).
    b. For each run in the test case (the one Input/Expected Output pair,
-      or each Session in order), run `java -cp out Bot`, feeding that
+      or each Session in order), run `java -cp out bot.Bot`, feeding that
       run's **Input** lines to standard input in order (e.g. via `printf
-      'line1\nline2\n... | java -cp out Bot`), and capture the full
+      'line1\nline2\n... | java -cp out bot.Bot`), and capture the full
       standard output produced. For a multi-session test case, do not
       touch `./data` between sessions.
    c. Compare each run's actual output verbatim against its **Expected

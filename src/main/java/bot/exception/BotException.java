@@ -1,3 +1,5 @@
+package bot.exception;
+
 /**
  * Signals a problem with a user command that Bot can explain in plain
  * language, e.g. a missing description or an unrecognized command word.
