@@ -27,10 +27,12 @@ public class Parser {
             this.arguments = arguments;
         }
 
+        /** The command word, e.g. {@code "todo"} in {@code "todo read book"}. */
         public String commandWord() {
             return commandWord;
         }
 
+        /** The raw, untrimmed text after the command word, e.g. {@code " read book"}. */
         public String arguments() {
             return arguments;
         }
@@ -68,6 +70,13 @@ public class Parser {
         return taskNumber - 1;
     }
 
+    /**
+     * Parses the argument text of a {@code todo} command into a new Todo.
+     *
+     * @param rest The text after the {@code todo} command word.
+     * @return A new, not-done Todo with that description.
+     * @throws BotException if the description is empty.
+     */
     public static Todo parseTodo(String rest) throws BotException {
         String description = rest.trim();
         if (description.isEmpty()) {
@@ -76,6 +85,13 @@ public class Parser {
         return new Todo(description);
     }
 
+    /**
+     * Parses the argument text of a {@code deadline} command into a new Deadline.
+     *
+     * @param rest The text after the {@code deadline} command word.
+     * @return A new, not-done Deadline with that description and due date/time.
+     * @throws BotException if the description, the {@code /by} marker, or the date/time is missing or invalid.
+     */
     public static Deadline parseDeadline(String rest) throws BotException {
         int byIndex = rest.indexOf("/by ");
         if (byIndex == -1) {
@@ -95,6 +111,13 @@ public class Parser {
         return new Deadline(description, TaskDateTime.parse(by));
     }
 
+    /**
+     * Parses the argument text of an {@code event} command into a new Event.
+     *
+     * @param rest The text after the {@code event} command word.
+     * @return A new, not-done Event with that description and start/end date/time.
+     * @throws BotException if the description, either marker, or either date/time is missing or invalid.
+     */
     public static Event parseEvent(String rest) throws BotException {
         int fromIndex = rest.indexOf("/from ");
         int toIndex = rest.indexOf("/to ");
@@ -116,6 +139,13 @@ public class Parser {
         return new Event(description, TaskDateTime.parse(from), TaskDateTime.parse(to));
     }
 
+    /**
+     * Parses the argument text of an {@code on} command into a date.
+     *
+     * @param rest The text after the {@code on} command word.
+     * @return The parsed date.
+     * @throws BotException if the date is missing or not in {@code yyyy-MM-dd} form.
+     */
     public static LocalDate parseOnDate(String rest) throws BotException {
         String trimmed = rest.trim();
         if (trimmed.isEmpty()) {

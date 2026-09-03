@@ -30,6 +30,11 @@ import bot.task.Todo;
 public class Storage {
     private final Path dataFile;
 
+    /**
+     * Creates a Storage backed by the data file at the given path.
+     *
+     * @param filePath The relative path to the data file, e.g. {@code "data/bot.txt"}.
+     */
     public Storage(String filePath) {
         this.dataFile = Paths.get(filePath);
     }

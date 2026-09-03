@@ -23,6 +23,11 @@ public class TaskList {
         this.tasks = new ArrayList<>(tasks);
     }
 
+    /**
+     * Adds a task to the end of the list.
+     *
+     * @param task The task to add.
+     */
     public void add(Task task) {
         tasks.add(task);
     }
@@ -32,18 +37,37 @@ public class TaskList {
         return tasks.remove(index);
     }
 
+    /**
+     * Returns the task at the given 0-based index.
+     *
+     * @param index The 0-based index of the task to return.
+     * @return The task at that index.
+     */
     public Task get(int index) {
         return tasks.get(index);
     }
 
+    /**
+     * Returns the number of tasks currently in the list.
+     */
     public int size() {
         return tasks.size();
     }
 
+    /**
+     * Marks the task at the given 0-based index as done.
+     *
+     * @param index The 0-based index of the task to mark.
+     */
     public void mark(int index) {
         tasks.get(index).markAsDone();
     }
 
+    /**
+     * Marks the task at the given 0-based index as not done.
+     *
+     * @param index The 0-based index of the task to unmark.
+     */
     public void unmark(int index) {
         tasks.get(index).markAsNotDone();
     }
