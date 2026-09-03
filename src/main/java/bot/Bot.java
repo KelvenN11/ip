@@ -168,6 +168,11 @@ public class Bot {
         }
     }
 
+    /**
+     * Starts Bot, backed by the data file at {@code data/bot.txt}.
+     *
+     * @param args Command-line arguments (not used).
+     */
     public static void main(String[] args) {
         new Bot("data/bot.txt").run();
     }

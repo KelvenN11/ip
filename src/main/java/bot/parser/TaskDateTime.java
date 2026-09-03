@@ -80,6 +80,9 @@ public class TaskDateTime {
         return date.format(DISPLAY_DATE);
     }
 
+    /**
+     * Returns the calendar date part of this value, discarding any time of day.
+     */
     public LocalDate toLocalDate() {
         return dateTime.toLocalDate();
     }

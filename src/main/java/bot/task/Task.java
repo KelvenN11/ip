@@ -9,11 +9,21 @@ public abstract class Task {
     private final String description;
     private boolean isDone;
 
+    /**
+     * Creates a new, not-done task with the given description.
+     *
+     * @param description The task's description text.
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
 
+    /**
+     * Returns the single-character icon shown for this task's done status.
+     *
+     * @return {@code "X"} if the task is done, a single space otherwise.
+     */
     public String getStatusIcon() {
         return (isDone ? "X" : " "); // mark done task with X
     }
@@ -28,14 +38,24 @@ public abstract class Task {
         return isDone;
     }
 
+    /**
+     * Marks this task as done.
+     */
     public void markAsDone() {
         isDone = true;
     }
 
+    /**
+     * Marks this task as not done.
+     */
     public void markAsNotDone() {
         isDone = false;
     }
 
+    /**
+     * Returns this task's status icon and description, e.g. {@code "[X] read book"}.
+     * Subclasses prepend their own type icon to this.
+     */
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
