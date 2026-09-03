@@ -1,3 +1,5 @@
+package bot.task;
+
 /**
  * A task with no date/time attached to it.
  */

@@ -1,4 +1,8 @@
+package bot.task;
+
 import java.time.LocalDate;
+
+import bot.parser.TaskDateTime;
 
 /**
  * A task that starts at a specific date/time and ends at a specific date/time.

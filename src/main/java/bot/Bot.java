@@ -1,6 +1,15 @@
+package bot;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import bot.exception.BotException;
+import bot.parser.Parser;
+import bot.storage.Storage;
+import bot.task.Task;
+import bot.task.TaskList;
+import bot.ui.Ui;
 
 /**
  * The chatbot's entry point and orchestrator. Bot itself holds no
