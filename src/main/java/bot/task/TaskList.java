@@ -74,13 +74,13 @@ public class TaskList {
 
     /** The tasks occurring on the given date, in list order, for the {@code on} command. */
     public List<Task> tasksOn(LocalDate date) {
-        List<Task> matching = new ArrayList<>();
+        List<Task> matchingTasks = new ArrayList<>();
         for (Task task : tasks) {
             if (task.occursOn(date)) {
-                matching.add(task);
+                matchingTasks.add(task);
             }
         }
-        return matching;
+        return matchingTasks;
     }
 
     /**
@@ -88,14 +88,14 @@ public class TaskList {
      * case-insensitively, in list order, for the {@code find} command.
      */
     public List<Task> findByKeyword(String keyword) {
-        List<Task> matching = new ArrayList<>();
+        List<Task> matchingTasks = new ArrayList<>();
         String needle = keyword.toLowerCase();
         for (Task task : tasks) {
             if (task.getDescription().toLowerCase().contains(needle)) {
-                matching.add(task);
+                matchingTasks.add(task);
             }
         }
-        return matching;
+        return matchingTasks;
     }
 
     /** A read-only view of every task in the list, in order - for {@code list} and for saving to disk. */

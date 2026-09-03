@@ -97,62 +97,62 @@ public class Bot {
 
         try {
             switch (commandWord) {
-            case "list":
-                ui.showTaskList(tasks.asList());
-                break;
-            case "mark": {
-                int index = Parser.parseTaskIndex(rest, "mark", tasks.size());
-                tasks.mark(index);
-                ui.showMarked(tasks.get(index));
-                saveTasks();
-                break;
-            }
-            case "unmark": {
-                int index = Parser.parseTaskIndex(rest, "unmark", tasks.size());
-                tasks.unmark(index);
-                ui.showUnmarked(tasks.get(index));
-                saveTasks();
-                break;
-            }
-            case "delete": {
-                int index = Parser.parseTaskIndex(rest, "delete", tasks.size());
-                Task removed = tasks.delete(index);
-                ui.showRemoved(removed, tasks.size());
-                saveTasks();
-                break;
-            }
-            case "todo": {
-                tasks.add(Parser.parseTodo(rest));
-                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks();
-                break;
-            }
-            case "deadline": {
-                tasks.add(Parser.parseDeadline(rest));
-                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks();
-                break;
-            }
-            case "event": {
-                tasks.add(Parser.parseEvent(rest));
-                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                saveTasks();
-                break;
-            }
-            case "on": {
-                LocalDate date = Parser.parseOnDate(rest);
-                ui.showTasksOnDate(date, tasks.tasksOn(date));
-                break;
-            }
-            case "find": {
-                String keyword = Parser.parseFindKeyword(rest);
-                ui.showMatchingTasks(tasks.findByKeyword(keyword));
-                break;
-            }
-            default:
-                throw new BotException(
-                        "OOPS!!! I don't understand \"" + commandWord
-                                + "\" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.");
+                case "list":
+                    ui.showTaskList(tasks.asList());
+                    break;
+                case "mark": {
+                    int index = Parser.parseTaskIndex(rest, "mark", tasks.size());
+                    tasks.mark(index);
+                    ui.showMarked(tasks.get(index));
+                    saveTasks();
+                    break;
+                }
+                case "unmark": {
+                    int index = Parser.parseTaskIndex(rest, "unmark", tasks.size());
+                    tasks.unmark(index);
+                    ui.showUnmarked(tasks.get(index));
+                    saveTasks();
+                    break;
+                }
+                case "delete": {
+                    int index = Parser.parseTaskIndex(rest, "delete", tasks.size());
+                    Task removed = tasks.delete(index);
+                    ui.showRemoved(removed, tasks.size());
+                    saveTasks();
+                    break;
+                }
+                case "todo": {
+                    tasks.add(Parser.parseTodo(rest));
+                    ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
+                    saveTasks();
+                    break;
+                }
+                case "deadline": {
+                    tasks.add(Parser.parseDeadline(rest));
+                    ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
+                    saveTasks();
+                    break;
+                }
+                case "event": {
+                    tasks.add(Parser.parseEvent(rest));
+                    ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
+                    saveTasks();
+                    break;
+                }
+                case "on": {
+                    LocalDate date = Parser.parseOnDate(rest);
+                    ui.showTasksOnDate(date, tasks.tasksOn(date));
+                    break;
+                }
+                case "find": {
+                    String keyword = Parser.parseFindKeyword(rest);
+                    ui.showMatchingTasks(tasks.findByKeyword(keyword));
+                    break;
+                }
+                default:
+                    throw new BotException(
+                            "OOPS!!! I don't understand \"" + commandWord
+                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.");
             }
         } catch (BotException e) {
             ui.showError(e.getMessage());
