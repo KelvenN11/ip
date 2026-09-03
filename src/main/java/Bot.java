@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Bot {
     private static final Ui ui = new Ui();
+    private static final Storage storage = new Storage("data/bot.txt");
 
     public static void main(String[] args) {
         ui.showWelcome();
@@ -23,7 +24,7 @@ public class Bot {
         List<Task> loaded;
         ArrayList<String> loadWarnings = new ArrayList<>();
         try {
-            loaded = Storage.load(loadWarnings);
+            loaded = storage.load(loadWarnings);
         } catch (BotException e) {
             ui.showLoadingError(e.getMessage());
             loaded = new ArrayList<>();
@@ -125,7 +126,7 @@ public class Bot {
      */
     private static void saveTasks(TaskList tasks) {
         try {
-            Storage.save(tasks.asList());
+            storage.save(tasks.asList());
         } catch (BotException e) {
             ui.showError(e.getMessage());
         }
