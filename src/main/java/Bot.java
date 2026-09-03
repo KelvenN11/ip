@@ -1,31 +1,16 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class Bot {
-    private static final String DIVIDER = "    ____________________________________________________________";
-    private static final String NAME = "Bot";
-    private static final String BANNER = " ____   ___  _____ \n"
-            + "| __ ) / _ \\|_   _|\n"
-            + "|  _ \\| | | | | |  \n"
-            + "| |_) | |_| | | |  \n"
-            + "|____/ \\___/  |_|  \n";
+    private static final Ui ui = new Ui();
 
     public static void main(String[] args) {
-        printWelcome();
+        ui.showWelcome();
         List<Task> tasks = loadTasks();
         runCommandLoop(tasks);
-        printFarewell();
-    }
-
-    /** Prints the startup banner and greeting. */
-    private static void printWelcome() {
-        System.out.println(DIVIDER);
-        System.out.print(BANNER);
-        System.out.println("     Hello! I'm " + NAME + ".");
-        System.out.println("     What can I do for you?");
-        System.out.println(DIVIDER);
+        ui.showFarewell();
+        ui.close();
     }
 
     /**
@@ -40,18 +25,10 @@ public class Bot {
         try {
             tasks = new ArrayList<>(Storage.load(loadWarnings));
         } catch (BotException e) {
-            System.out.println("     " + e.getMessage());
-            System.out.println(DIVIDER);
+            ui.showLoadingError(e.getMessage());
             tasks = new ArrayList<>();
         }
-        if (!loadWarnings.isEmpty()) {
-            System.out.println("     Note: some saved tasks were skipped because the data file looks "
-                    + "corrupted:");
-            for (String warning : loadWarnings) {
-                System.out.println("       - " + warning);
-            }
-            System.out.println(DIVIDER);
-        }
+        ui.showLoadWarnings(loadWarnings);
         return tasks;
     }
 
@@ -60,15 +37,13 @@ public class Bot {
      * until the user types "bye".
      */
     private static void runCommandLoop(List<Task> tasks) {
-        Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
+        String input = ui.readCommand();
         while (!input.equals("bye")) {
-            System.out.println(DIVIDER);
+            ui.showLine();
             executeCommand(input, tasks);
-            System.out.println(DIVIDER);
-            input = scanner.nextLine();
+            ui.showLine();
+            input = ui.readCommand();
         }
-        scanner.close();
     }
 
     /**
@@ -86,62 +61,56 @@ public class Bot {
         try {
             switch (commandWord) {
             case "list":
-                System.out.println("     Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println("     " + (i + 1) + "." + tasks.get(i));
-                }
+                ui.showTaskList(tasks);
                 break;
             case "mark": {
                 int index = parseTaskIndex(rest, "mark", tasks.size());
                 tasks.get(index).markAsDone();
-                System.out.println("     Nice! I've marked this task as done:");
-                System.out.println("       " + tasks.get(index));
+                ui.showMarked(tasks.get(index));
                 saveTasks(tasks);
                 break;
             }
             case "unmark": {
                 int index = parseTaskIndex(rest, "unmark", tasks.size());
                 tasks.get(index).markAsNotDone();
-                System.out.println("     OK, I've marked this task as not done yet:");
-                System.out.println("       " + tasks.get(index));
+                ui.showUnmarked(tasks.get(index));
                 saveTasks(tasks);
                 break;
             }
             case "delete": {
                 int index = parseTaskIndex(rest, "delete", tasks.size());
                 Task removed = tasks.remove(index);
-                printRemoved(removed, tasks.size());
+                ui.showRemoved(removed, tasks.size());
                 saveTasks(tasks);
                 break;
             }
             case "todo": {
                 tasks.add(parseTodo(rest));
-                printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
                 saveTasks(tasks);
                 break;
             }
             case "deadline": {
                 tasks.add(parseDeadline(rest));
-                printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
                 saveTasks(tasks);
                 break;
             }
             case "event": {
                 tasks.add(parseEvent(rest));
-                printAdded(tasks.get(tasks.size() - 1), tasks.size());
+                ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
                 saveTasks(tasks);
                 break;
             }
             case "on": {
                 LocalDate date = parseOnDate(rest);
-                System.out.println("     Here are the tasks on " + TaskDateTime.formatDateOnly(date) + ":");
-                int count = 0;
+                List<Task> matching = new ArrayList<>();
                 for (Task task : tasks) {
                     if (task.occursOn(date)) {
-                        count++;
-                        System.out.println("     " + count + "." + task);
+                        matching.add(task);
                     }
                 }
+                ui.showTasksOnDate(date, matching);
                 break;
             }
             default:
@@ -150,14 +119,8 @@ public class Bot {
                                 + "\" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.");
             }
         } catch (BotException e) {
-            System.out.println("     " + e.getMessage());
+            ui.showError(e.getMessage());
         }
-    }
-
-    private static void printFarewell() {
-        System.out.println(DIVIDER);
-        System.out.println("     Bye. Hope to see you again soon!");
-        System.out.println(DIVIDER);
     }
 
     /**
@@ -170,29 +133,8 @@ public class Bot {
         try {
             Storage.save(tasks);
         } catch (BotException e) {
-            System.out.println("     " + e.getMessage());
+            ui.showError(e.getMessage());
         }
-    }
-
-    /**
-     * Prints the shared "here's what changed, here's the task, here's the
-     * new count" structure used by both {@link #printAdded} and
-     * {@link #printRemoved}, so the two only need to supply their own
-     * lead-in line.
-     */
-    private static void printTaskCountUpdate(String leadIn, Task task, int taskCount) {
-        String taskWord = (taskCount == 1) ? "task" : "tasks";
-        System.out.println("     " + leadIn);
-        System.out.println("       " + task);
-        System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
-    }
-
-    private static void printAdded(Task task, int taskCount) {
-        printTaskCountUpdate("Got it. I've added this task:", task, taskCount);
-    }
-
-    private static void printRemoved(Task task, int taskCount) {
-        printTaskCountUpdate("Noted. I've removed this task:", task, taskCount);
     }
 
     /**
