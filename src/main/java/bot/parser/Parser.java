@@ -123,4 +123,12 @@ public class Parser {
         }
         return TaskDateTime.parseDateOnly(trimmed);
     }
+
+    public static String parseFindKeyword(String rest) throws BotException {
+        String trimmed = rest.trim();
+        if (trimmed.isEmpty()) {
+            throw new BotException("OOPS!!! Tell me what keyword to search for, e.g. \"find book\".");
+        }
+        return trimmed;
+    }
 }

@@ -144,10 +144,15 @@ public class Bot {
                 ui.showTasksOnDate(date, tasks.tasksOn(date));
                 break;
             }
+            case "find": {
+                String keyword = Parser.parseFindKeyword(rest);
+                ui.showMatchingTasks(tasks.findByKeyword(keyword));
+                break;
+            }
             default:
                 throw new BotException(
                         "OOPS!!! I don't understand \"" + commandWord
-                                + "\" - try list, todo, deadline, event, mark, unmark, delete, on, or bye.");
+                                + "\" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.");
             }
         } catch (BotException e) {
             ui.showError(e.getMessage());
