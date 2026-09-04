@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 import bot.exception.BotException;
 
@@ -26,10 +27,17 @@ import bot.exception.BotException;
  * a time prints as e.g. {@code Oct 15 2019, 6:00PM}.
  */
 public class TaskDateTime {
-    private static final DateTimeFormatter INPUT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter INPUT_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    private static final DateTimeFormatter DISPLAY_DATE = DateTimeFormatter.ofPattern("MMM dd yyyy");
-    private static final DateTimeFormatter DISPLAY_DATE_TIME = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma");
+    // Pinned to Locale.US so month names and the AM/PM marker are always
+    // rendered the same way (e.g. "Oct" and "PM"), regardless of the JVM's
+    // default locale - otherwise both differ by machine/JDK version, which
+    // once caused e.g. "6:00pm" instead of "6:00PM" on this machine's
+    // default locale.
+    private static final DateTimeFormatter INPUT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US);
+    private static final DateTimeFormatter INPUT_DATE_TIME =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm", Locale.US);
+    private static final DateTimeFormatter DISPLAY_DATE = DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.US);
+    private static final DateTimeFormatter DISPLAY_DATE_TIME =
+            DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma", Locale.US);
 
     private final LocalDateTime dateTime;
     private final boolean hasTime;
