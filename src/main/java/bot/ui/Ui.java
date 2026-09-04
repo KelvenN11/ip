@@ -29,15 +29,14 @@ public class Ui {
     public void showWelcome() {
         showLine();
         System.out.print(BANNER);
-        System.out.println("     Hello! I'm " + NAME + ".");
-        System.out.println("     What can I do for you?");
+        printLines("     Hello! I'm " + NAME + ".", "     What can I do for you?");
         showLine();
     }
 
     /** Prints the closing message shown just before the program exits. */
     public void showFarewell() {
         showLine();
-        System.out.println("     Bye. Hope to see you again soon!");
+        printLines("     Bye. Hope to see you again soon!");
         showLine();
     }
 
@@ -63,12 +62,12 @@ public class Ui {
      * command, success or failure.
      */
     public void showError(String message) {
-        System.out.println("     " + message);
+        printLines("     " + message);
     }
 
     /** Prints the message for when the saved task file couldn't be loaded at startup. */
     public void showLoadingError(String message) {
-        System.out.println("     " + message);
+        printLines("     " + message);
         showLine();
     }
 
@@ -123,14 +122,12 @@ public class Ui {
 
     /** Prints the confirmation shown after a task is marked done. */
     public void showMarked(Task task) {
-        System.out.println("     Nice! I've marked this task as done:");
-        System.out.println("       " + task);
+        printLines("     Nice! I've marked this task as done:", "       " + task);
     }
 
     /** Prints the confirmation shown after a task is marked not done. */
     public void showUnmarked(Task task) {
-        System.out.println("     OK, I've marked this task as not done yet:");
-        System.out.println("       " + task);
+        printLines("     OK, I've marked this task as not done yet:", "       " + task);
     }
 
     /**
@@ -140,8 +137,18 @@ public class Ui {
      */
     private void showTaskCountUpdate(String leadIn, Task task, int taskCount) {
         String taskWord = (taskCount == 1) ? "task" : "tasks";
-        System.out.println("     " + leadIn);
-        System.out.println("       " + task);
-        System.out.println("     Now you have " + taskCount + " " + taskWord + " in the list.");
+        printLines("     " + leadIn, "       " + task, "     Now you have " + taskCount + " " + taskWord
+                + " in the list.");
+    }
+
+    /**
+     * Prints each given line to the console in order, one per line. A
+     * variable number of arguments lets each caller pass exactly the
+     * lines it has (one, two, or three) without building a List first.
+     */
+    private void printLines(String... lines) {
+        for (String line : lines) {
+            System.out.println(line);
+        }
     }
 }
