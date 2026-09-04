@@ -108,8 +108,8 @@ class ParserTest {
 
     @Test
     void parseEvent_toBeforeFrom_throwsBotException() {
-        assertThrows(BotException.class,
-                () -> Parser.parseEvent("project meeting /to 2019-10-15 1600 /from 2019-10-15 1400"));
+        assertThrows(BotException.class, () ->
+                Parser.parseEvent("project meeting /to 2019-10-15 1600 /from 2019-10-15 1400"));
     }
 
     @Test
