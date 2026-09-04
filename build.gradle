@@ -4,6 +4,12 @@ plugins {
     id 'java'
     // Adds the 'run' task, so `./gradlew run` launches the app directly.
     id 'application'
+    // Adds the 'shadowJar' task, which bundles the compiled classes and
+    // every dependency into one runnable "fat" jar (see A-Jar). This
+    // project currently has no runtime dependencies of its own, but the
+    // same task is what a user would run to produce a distributable jar
+    // regardless, and needs no extra configuration to do so correctly.
+    id 'com.gradleup.shadow' version '9.5.1'
 }
 
 java {
@@ -26,6 +32,13 @@ tasks.named('run') {
     // forward the terminal's/pipe's standard input to the child JVM at
     // all, so the program would fail immediately on its first read.
     standardInput = System.in
+}
+
+shadowJar {
+    // Without this, the Shadow plugin names the jar
+    // "ip-all.jar" (from settings.gradle's rootProject.name), which
+    // doesn't say what it actually is.
+    archiveFileName = 'bot.jar'
 }
 
 repositories {
