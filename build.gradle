@@ -4,6 +4,13 @@ plugins {
     id 'java'
     // Adds the 'run' task, so `./gradlew run` launches the app directly.
     id 'application'
+    // Adds the 'checkstyleMain'/'checkstyleTest' tasks, which check the
+    // code against config/checkstyle/checkstyle.xml (see A-Checkstyle).
+    id 'checkstyle'
+}
+
+checkstyle {
+    toolVersion = '14.1.0'
 }
 
 java {
