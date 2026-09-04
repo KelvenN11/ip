@@ -10,6 +10,13 @@ plugins {
     // same task is what a user would run to produce a distributable jar
     // regardless, and needs no extra configuration to do so correctly.
     id 'com.gradleup.shadow' version '9.5.1'
+    // Adds the 'checkstyleMain'/'checkstyleTest' tasks, which check the
+    // code against config/checkstyle/checkstyle.xml (see A-Checkstyle).
+    id 'checkstyle'
+}
+
+checkstyle {
+    toolVersion = '14.1.0'
 }
 
 java {

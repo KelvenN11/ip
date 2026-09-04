@@ -154,6 +154,13 @@ public class Parser {
         return TaskDateTime.parseDateOnly(trimmed);
     }
 
+    /**
+     * Parses the argument text of a {@code find} command into a search keyword.
+     *
+     * @param rest The text after the {@code find} command word.
+     * @return The trimmed keyword to search task descriptions for.
+     * @throws BotException if the keyword is missing.
+     */
     public static String parseFindKeyword(String rest) throws BotException {
         String trimmed = rest.trim();
         if (trimmed.isEmpty()) {
