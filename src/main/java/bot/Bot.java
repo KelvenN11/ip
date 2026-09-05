@@ -70,27 +70,47 @@ public class Bot {
     }
 
     /**
-     * Reads one line of user input at a time and executes it as a command,
+     * Reads one line of user input at a time and prints its response,
      * until the user types "bye".
      */
     private void runCommandLoop() {
         String input = ui.readCommand();
         while (!input.equals("bye")) {
             ui.showLine();
-            executeCommand(input);
+            System.out.println(getResponse(input));
             ui.showLine();
             input = ui.readCommand();
         }
     }
 
     /**
-     * Parses one line of user input into a command word and its argument
-     * text (via {@link Parser}), and carries out whichever command it
-     * names against the task list. Any problem with the command
-     * (unrecognized word, missing/malformed argument, bad task number) is
-     * reported as an "OOPS!!!" message instead of propagating further.
+     * Returns whether {@code input} is the command that ends the session,
+     * so a caller (console loop or GUI) knows when to stop.
      */
-    private void executeCommand(String input) {
+    public boolean isExitCommand(String input) {
+        return input.equals("bye");
+    }
+
+    /** Returns the closing message shown for the {@code bye} command, for the GUI to display. */
+    public String getFarewellMessage() {
+        return ui.formatFarewell();
+    }
+
+    /** Returns the greeting shown at startup, for the GUI to display. */
+    public String getGreetingMessage() {
+        return ui.formatGreeting();
+    }
+
+    /**
+     * Parses one line of user input into a command word and its argument
+     * text (via {@link Parser}), carries out whichever command it names
+     * against the task list, and returns the resulting response text. Any
+     * problem with the command (unrecognized word, missing/malformed
+     * argument, bad task number) is returned as an "OOPS!!!" message
+     * instead of propagating further. Used by both the console loop and
+     * the GUI, so the two show identical wording for the same input.
+     */
+    public String getResponse(String input) {
         Parser.ParsedCommand command = Parser.parseCommand(input);
         String commandWord = command.commandWord();
         String rest = command.arguments();
@@ -98,56 +118,41 @@ public class Bot {
         try {
             switch (commandWord) {
                 case "list":
-                    ui.showTaskList(tasks.asList());
-                    break;
+                    return ui.formatTaskList(tasks.asList());
                 case "mark": {
                     int index = Parser.parseTaskIndex(rest, "mark", tasks.size());
                     tasks.mark(index);
-                    ui.showMarked(tasks.get(index));
-                    saveTasks();
-                    break;
+                    return withSaveResult(ui.formatMarked(tasks.get(index)));
                 }
                 case "unmark": {
                     int index = Parser.parseTaskIndex(rest, "unmark", tasks.size());
                     tasks.unmark(index);
-                    ui.showUnmarked(tasks.get(index));
-                    saveTasks();
-                    break;
+                    return withSaveResult(ui.formatUnmarked(tasks.get(index)));
                 }
                 case "delete": {
                     int index = Parser.parseTaskIndex(rest, "delete", tasks.size());
                     Task removed = tasks.delete(index);
-                    ui.showRemoved(removed, tasks.size());
-                    saveTasks();
-                    break;
+                    return withSaveResult(ui.formatRemoved(removed, tasks.size()));
                 }
                 case "todo": {
                     tasks.add(Parser.parseTodo(rest));
-                    ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                    saveTasks();
-                    break;
+                    return withSaveResult(ui.formatAdded(tasks.get(tasks.size() - 1), tasks.size()));
                 }
                 case "deadline": {
                     tasks.add(Parser.parseDeadline(rest));
-                    ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                    saveTasks();
-                    break;
+                    return withSaveResult(ui.formatAdded(tasks.get(tasks.size() - 1), tasks.size()));
                 }
                 case "event": {
                     tasks.add(Parser.parseEvent(rest));
-                    ui.showAdded(tasks.get(tasks.size() - 1), tasks.size());
-                    saveTasks();
-                    break;
+                    return withSaveResult(ui.formatAdded(tasks.get(tasks.size() - 1), tasks.size()));
                 }
                 case "on": {
                     LocalDate date = Parser.parseOnDate(rest);
-                    ui.showTasksOnDate(date, tasks.tasksOn(date));
-                    break;
+                    return ui.formatTasksOnDate(date, tasks.tasksOn(date));
                 }
                 case "find": {
                     String keyword = Parser.parseFindKeyword(rest);
-                    ui.showMatchingTasks(tasks.findByKeyword(keyword));
-                    break;
+                    return ui.formatMatchingTasks(tasks.findByKeyword(keyword));
                 }
                 default:
                     throw new BotException(
@@ -155,21 +160,23 @@ public class Bot {
                                     + "\" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.");
             }
         } catch (BotException e) {
-            ui.showError(e.getMessage());
+            return ui.formatError(e.getMessage());
         }
     }
 
     /**
      * Persists the current task list to disk, so the change just made
-     * survives a restart. Saving is best-effort: if it fails (e.g. the
-     * disk is full or the data folder isn't writable), the user is told
-     * but the in-memory task list is left as-is rather than crashing.
+     * survives a restart, and appends any save failure to {@code response}.
+     * Saving is best-effort: if it fails (e.g. the disk is full or the
+     * data folder isn't writable), the user is told but the in-memory task
+     * list is left as-is rather than crashing.
      */
-    private void saveTasks() {
+    private String withSaveResult(String response) {
         try {
             storage.save(tasks.asList());
+            return response;
         } catch (BotException e) {
-            ui.showError(e.getMessage());
+            return response + "\n" + ui.formatError(e.getMessage());
         }
     }
 
