@@ -111,6 +111,11 @@ public class Ui {
                 matchingTasks);
     }
 
+    /** Formats the full numbered task list after reordering it, for the {@code sort} command. */
+    public String formatSorted(List<Task> tasks) {
+        return formatNumberedTasks("     Here are your tasks, sorted by date:", tasks);
+    }
+
     /** Formats a lead-in line followed by each task in {@code tasks}, numbered from 1. */
     private String formatNumberedTasks(String leadIn, List<Task> tasks) {
         StringBuilder result = new StringBuilder(leadIn);

@@ -53,4 +53,10 @@ public class Deadline extends Task {
     public boolean occursOn(LocalDate date) {
         return by.toLocalDate().equals(date);
     }
+
+    /** Returns this deadline's due date, used to order it for the {@code sort} command. */
+    @Override
+    protected LocalDate getSortDate() {
+        return by.toLocalDate();
+    }
 }

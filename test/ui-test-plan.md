@@ -264,7 +264,7 @@ bye
      What can I do for you?
     ____________________________________________________________
     ____________________________________________________________
-     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.
+     OOPS!!! I don't understand "blah" - try list, todo, deadline, event, mark, unmark, delete, on, find, sort, or bye.
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! A todo needs a description, e.g. "todo borrow book".
@@ -674,6 +674,102 @@ bye
     ____________________________________________________________
     ____________________________________________________________
      OOPS!!! Tell me what keyword to search for, e.g. "find book".
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+## Test Case 11: `sort` reorders tasks by date and persists the new order
+
+**Aim:** The `sort` command (C-Sort) reorders the task list: every Todo
+first (keeping their original relative order), then every Deadline and
+Event together in ascending date order (a Deadline by its due date, an
+Event by its start date). The reordering is permanent — it's saved to
+`./data/bot.txt`, so a later run of the program (started fresh, without
+deleting that file) sees the tasks in the new order via `list`, not just
+in `sort`'s own output.
+
+**Setup:** Delete `./data` if present before Session 1, so Session 1
+starts with no saved tasks. Do NOT delete or reset `./data` between
+Session 1 and Session 2 — Session 2 must see whatever Session 1 saved.
+
+**Session 1 Input:**
+```
+todo read book
+deadline pay bills /by 2019-10-20
+event project meeting /from 2019-10-15 /to 2019-10-16
+todo join club
+sort
+bye
+```
+
+**Session 1 Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] read book
+     Now you have 1 task in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] pay bills (by: Oct 20 2019)
+     Now you have 2 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [E][ ] project meeting (from: Oct 15 2019 to: Oct 16 2019)
+     Now you have 3 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Got it. I've added this task:
+       [T][ ] join club
+     Now you have 4 tasks in the list.
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are your tasks, sorted by date:
+     1.[T][ ] read book
+     2.[T][ ] join club
+     3.[E][ ] project meeting (from: Oct 15 2019 to: Oct 16 2019)
+     4.[D][ ] pay bills (by: Oct 20 2019)
+    ____________________________________________________________
+    ____________________________________________________________
+     Bye. Hope to see you again soon!
+    ____________________________________________________________
+```
+
+**Session 2 Input:**
+```
+list
+bye
+```
+
+**Session 2 Expected Output:**
+```
+    ____________________________________________________________
+ ____   ___  _____ 
+| __ ) / _ \|_   _|
+|  _ \| | | | | |  
+| |_) | |_| | | |  
+|____/ \___/  |_|  
+     Hello! I'm Bot.
+     What can I do for you?
+    ____________________________________________________________
+    ____________________________________________________________
+     Here are the tasks in your list:
+     1.[T][ ] read book
+     2.[T][ ] join club
+     3.[E][ ] project meeting (from: Oct 15 2019 to: Oct 16 2019)
+     4.[D][ ] pay bills (by: Oct 20 2019)
     ____________________________________________________________
     ____________________________________________________________
      Bye. Hope to see you again soon!

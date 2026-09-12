@@ -155,10 +155,14 @@ public class Bot {
                     String keyword = Parser.parseFindKeyword(rest);
                     return ui.formatMatchingTasks(tasks.findByKeyword(keyword));
                 }
+                case "sort":
+                    tasks.sort();
+                    return withSaveResult(ui.formatSorted(tasks.asList()));
                 default:
                     throw new BotException(
                             "OOPS!!! I don't understand \"" + commandWord
-                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, on, find, or bye.");
+                                    + "\" - try list, todo, deadline, event, mark, unmark, delete, on, find, sort, "
+                                    + "or bye.");
             }
         } catch (BotException e) {
             return ui.formatError(e.getMessage());
