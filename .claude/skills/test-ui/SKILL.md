@@ -31,9 +31,11 @@ case (or the default) says to.
 
 2. Build the program fresh (the source is split across packages under
    `src/main/java/bot/...`, so a flat `*.java` glob won't find every
-   file — discover them recursively instead):
+   file — discover them recursively instead). Exclude `bot/gui` (the
+   JavaFX GUI, see Level-10): `Bot` never depends on it, and it needs
+   JavaFX on the classpath, which plain `javac` doesn't have:
    ```
-   find src/main/java -name "*.java" | xargs javac -d out
+   find src/main/java -path "*/bot/gui" -prune -o -name "*.java" -print | xargs javac -d out
    ```
    If the build fails, stop and report the compiler error — do not run any
    test cases.
