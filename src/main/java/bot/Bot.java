@@ -111,6 +111,13 @@ public class Bot {
      * the GUI, so the two show identical wording for the same input.
      */
     public String getResponse(String input) {
+        // Both callers of getResponse - the console loop's Scanner.nextLine()
+        // and the GUI's TextField.getText() - always return a non-null
+        // String (empty at most, never null), and neither passes the "bye"
+        // input through to here (the console loop stops before calling it;
+        // the GUI checks isExitCommand first). A null input here would mean
+        // a future caller broke that assumption.
+        assert input != null : "input must not be null";
         Parser.ParsedCommand command = Parser.parseCommand(input);
         String commandWord = command.commandWord();
         String rest = command.arguments();

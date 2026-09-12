@@ -15,6 +15,12 @@ public abstract class Task {
      * @param description The task's description text.
      */
     public Task(String description) {
+        // Every current caller (Parser's parseTodo/parseDeadline/parseEvent
+        // for user commands, Storage's parseLine for saved lines) always
+        // passes a real String from String.split/substring/trim, which is
+        // never null - so a null description here would mean a future
+        // caller is constructing a Task directly with bad data.
+        assert description != null : "a Task's description must not be null";
         this.description = description;
         this.isDone = false;
     }

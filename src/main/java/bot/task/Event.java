@@ -23,6 +23,11 @@ public class Event extends Task {
      */
     public Event(String description, TaskDateTime from, TaskDateTime to) {
         super(description);
+        // from/to always come from successful TaskDateTime.parse() calls
+        // (in Parser.parseEvent or Storage.parseLine), which either return
+        // a non-null value or throw - so neither should ever be null
+        // here; toString/occursOn/toSaveFormat all dereference both.
+        assert from != null && to != null : "an Event's from/to date-times must not be null";
         this.from = from;
         this.to = to;
     }
