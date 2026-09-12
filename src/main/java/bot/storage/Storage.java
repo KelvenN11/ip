@@ -146,6 +146,11 @@ public class Storage {
             default:
                 throw new BotException("unknown task type \"" + type + "\" (expected \"T\", \"D\", or \"E\")");
         }
+        // Every branch of the switch above either assigns task or throws,
+        // so task is never null here - this documents that the switch is
+        // exhaustive for the three known type letters, rather than
+        // silently relying on the compiler's definite-assignment check.
+        assert task != null : "task should have been assigned or an exception thrown by the switch above";
         if (isDone) {
             task.markAsDone();
         }

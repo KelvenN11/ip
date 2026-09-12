@@ -34,6 +34,7 @@ public class TaskList {
 
     /** Removes and returns the task at the given 0-based index. */
     public Task delete(int index) {
+        assertValidIndex(index);
         return tasks.remove(index);
     }
 
@@ -44,6 +45,7 @@ public class TaskList {
      * @return The task at that index.
      */
     public Task get(int index) {
+        assertValidIndex(index);
         return tasks.get(index);
     }
 
@@ -60,6 +62,7 @@ public class TaskList {
      * @param index The 0-based index of the task to mark.
      */
     public void mark(int index) {
+        assertValidIndex(index);
         tasks.get(index).markAsDone();
     }
 
@@ -69,7 +72,24 @@ public class TaskList {
      * @param index The 0-based index of the task to unmark.
      */
     public void unmark(int index) {
+        assertValidIndex(index);
         tasks.get(index).markAsNotDone();
+    }
+
+    /**
+     * Asserts that {@code index} is a valid 0-based index into the task
+     * list. Every caller that reaches get/mark/unmark/delete already went
+     * through {@link bot.parser.Parser#parseTaskIndex}, which rejects an
+     * out-of-range number with a user-facing "OOPS!!!" message before
+     * TaskList is ever called - so this assertion documents that
+     * precondition and should never fail. It's an assertion rather than a
+     * thrown exception because an out-of-range index here would be a bug
+     * in the caller, not something a user can trigger directly.
+     */
+    private void assertValidIndex(int index) {
+        assert index >= 0 && index < tasks.size()
+                : "index " + index + " is out of bounds for a task list of size " + tasks.size()
+                        + " - the caller should have validated it first (e.g. via Parser.parseTaskIndex)";
     }
 
     /** The tasks occurring on the given date, in list order, for the {@code on} command. */

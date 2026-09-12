@@ -43,6 +43,11 @@ public class TaskDateTime {
     private final boolean hasTime;
 
     private TaskDateTime(LocalDateTime dateTime, boolean hasTime) {
+        // Both call sites in parse() build dateTime via
+        // LocalDateTime.parse/LocalDate.atStartOfDay, neither of which
+        // returns null (they throw DateTimeParseException instead) - so
+        // this assumption should always hold for this private constructor.
+        assert dateTime != null : "dateTime must not be null";
         this.dateTime = dateTime;
         this.hasTime = hasTime;
     }

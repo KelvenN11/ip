@@ -20,6 +20,11 @@ public class Deadline extends Task {
      */
     public Deadline(String description, TaskDateTime by) {
         super(description);
+        // by always comes from a successful TaskDateTime.parse() call
+        // (in Parser.parseDeadline or Storage.parseLine), which either
+        // returns a non-null value or throws - so by should never be
+        // null here; toString/occursOn/toSaveFormat all dereference it.
+        assert by != null : "a Deadline's due date/time must not be null";
         this.by = by;
     }
 

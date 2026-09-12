@@ -49,6 +49,11 @@ public class MainWindow extends AnchorPane {
      */
     @FXML
     private void handleUserInput() {
+        // Main.start() always calls setBot() right after loading this
+        // controller from FXML and before showing the stage, so the user
+        // can't type into userInput (and trigger this handler) before bot
+        // is set - a null bot here would mean that startup order broke.
+        assert bot != null : "setBot() must be called before the user can interact with the window";
         String input = userInput.getText();
         if (input.isEmpty()) {
             return;
