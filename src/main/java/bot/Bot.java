@@ -134,18 +134,12 @@ public class Bot {
                     Task removed = tasks.delete(index);
                     return withSaveResult(ui.formatRemoved(removed, tasks.size()));
                 }
-                case "todo": {
-                    tasks.add(Parser.parseTodo(rest));
-                    return withSaveResult(ui.formatAdded(tasks.get(tasks.size() - 1), tasks.size()));
-                }
-                case "deadline": {
-                    tasks.add(Parser.parseDeadline(rest));
-                    return withSaveResult(ui.formatAdded(tasks.get(tasks.size() - 1), tasks.size()));
-                }
-                case "event": {
-                    tasks.add(Parser.parseEvent(rest));
-                    return withSaveResult(ui.formatAdded(tasks.get(tasks.size() - 1), tasks.size()));
-                }
+                case "todo":
+                    return addTask(Parser.parseTodo(rest));
+                case "deadline":
+                    return addTask(Parser.parseDeadline(rest));
+                case "event":
+                    return addTask(Parser.parseEvent(rest));
                 case "on": {
                     LocalDate date = Parser.parseOnDate(rest);
                     return ui.formatTasksOnDate(date, tasks.tasksOn(date));
@@ -162,6 +156,17 @@ public class Bot {
         } catch (BotException e) {
             return ui.formatError(e.getMessage());
         }
+    }
+
+    /**
+     * Adds a newly-parsed task to the list, persists the change, and
+     * returns the resulting confirmation message. Shared by the todo,
+     * deadline, and event cases in {@link #getResponse}, which otherwise
+     * differed only in which Parser method produced the task.
+     */
+    private String addTask(Task newTask) {
+        tasks.add(newTask);
+        return withSaveResult(ui.formatAdded(newTask, tasks.size()));
     }
 
     /**
