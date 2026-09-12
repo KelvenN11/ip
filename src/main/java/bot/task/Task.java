@@ -82,4 +82,13 @@ public abstract class Task {
     public boolean occursOn(LocalDate date) {
         return false;
     }
+
+    /**
+     * Returns the date this task should be ordered by for the
+     * {@code sort} command, or {@code null} if it has no date (a Todo).
+     * Deadline and Event override this with their due/start date.
+     */
+    protected LocalDate getSortDate() {
+        return null;
+    }
 }

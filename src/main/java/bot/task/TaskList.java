@@ -2,6 +2,7 @@ package bot.task;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -109,6 +110,18 @@ public class TaskList {
         return tasks.stream()
                 .filter(task -> task.getDescription().toLowerCase().contains(needle))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Reorders the task list in place for the {@code sort} command: Todos
+     * first (in their existing relative order), then every Deadline and
+     * Event merged together in ascending date order (a Deadline by its due
+     * date, an Event by its start date). Tasks on the same date, or with no
+     * date at all, keep their existing relative order, since the sort used
+     * here is stable.
+     */
+    public void sort() {
+        tasks.sort(Comparator.comparing(Task::getSortDate, Comparator.nullsFirst(Comparator.naturalOrder())));
     }
 
     /** A read-only view of every task in the list, in order - for {@code list} and for saving to disk. */

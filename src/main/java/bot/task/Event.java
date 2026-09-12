@@ -59,4 +59,10 @@ public class Event extends Task {
     public boolean occursOn(LocalDate date) {
         return !date.isBefore(from.toLocalDate()) && !date.isAfter(to.toLocalDate());
     }
+
+    /** Returns this event's start date, used to order it for the {@code sort} command. */
+    @Override
+    protected LocalDate getSortDate() {
+        return from.toLocalDate();
+    }
 }

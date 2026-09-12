@@ -96,6 +96,34 @@ class TaskListTest {
     }
 
     @Test
+    void sort_putsTodosFirstThenDatedTasksChronologically() throws Exception {
+        TaskList taskList = new TaskList();
+        taskList.add(new Deadline("pay bills", TaskDateTime.parse("2019-10-20")));
+        taskList.add(new Todo("read book"));
+        taskList.add(new Event("project meeting", TaskDateTime.parse("2019-10-15"), TaskDateTime.parse("2019-10-16")));
+        taskList.add(new Todo("join club"));
+
+        taskList.sort();
+
+        assertEquals("[T][ ] read book", taskList.get(0).toString());
+        assertEquals("[T][ ] join club", taskList.get(1).toString());
+        assertEquals("[E][ ] project meeting (from: Oct 15 2019 to: Oct 16 2019)", taskList.get(2).toString());
+        assertEquals("[D][ ] pay bills (by: Oct 20 2019)", taskList.get(3).toString());
+    }
+
+    @Test
+    void sort_sameDate_keepsOriginalRelativeOrder() throws Exception {
+        TaskList taskList = new TaskList();
+        taskList.add(new Deadline("return book", TaskDateTime.parse("2019-10-15")));
+        taskList.add(new Deadline("pay bills", TaskDateTime.parse("2019-10-15")));
+
+        taskList.sort();
+
+        assertEquals("[D][ ] return book (by: Oct 15 2019)", taskList.get(0).toString());
+        assertEquals("[D][ ] pay bills (by: Oct 15 2019)", taskList.get(1).toString());
+    }
+
+    @Test
     void asList_returnsTasksInOrder() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
