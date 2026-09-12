@@ -3,6 +3,7 @@ package bot.task;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Holds the current list of tasks and every operation that reads or
@@ -74,13 +75,9 @@ public class TaskList {
 
     /** The tasks occurring on the given date, in list order, for the {@code on} command. */
     public List<Task> tasksOn(LocalDate date) {
-        List<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.occursOn(date)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.occursOn(date))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -88,14 +85,10 @@ public class TaskList {
      * case-insensitively, in list order, for the {@code find} command.
      */
     public List<Task> findByKeyword(String keyword) {
-        List<Task> matchingTasks = new ArrayList<>();
         String needle = keyword.toLowerCase();
-        for (Task task : tasks) {
-            if (task.getDescription().toLowerCase().contains(needle)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.getDescription().toLowerCase().contains(needle))
+                .collect(Collectors.toList());
     }
 
     /** A read-only view of every task in the list, in order - for {@code list} and for saving to disk. */
