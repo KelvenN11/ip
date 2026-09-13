@@ -102,8 +102,8 @@ public class TaskList {
     }
 
     /**
-     * The tasks whose description contains {@code keyword}, matched
-     * case-insensitively, in list order, for the {@code find} command.
+     * Returns the tasks whose description contains {@code keyword},
+     * matched case-insensitively, in list order, for the {@code find} command.
      */
     public List<Task> findByKeyword(String keyword) {
         String needle = keyword.toLowerCase();

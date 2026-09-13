@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import bot.parser.TaskDateTime;
 
 /**
- * A task that needs to be done before a specific date/time.
+ * Represents a task that needs to be done before a specific date/time.
  */
 public class Deadline extends Task {
 

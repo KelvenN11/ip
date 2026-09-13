@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import bot.parser.TaskDateTime;
 
 /**
- * A task that starts at a specific date/time and ends at a specific date/time.
+ * Represents a task that starts at a specific date/time and ends at a specific date/time.
  */
 public class Event extends Task {
 

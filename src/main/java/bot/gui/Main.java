@@ -10,7 +10,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * A JavaFX GUI for Bot, backed by the same {@link Bot} used by the
+ * Provides a JavaFX GUI for Bot, backed by the same {@link Bot} used by the
  * console UI (see {@code bot.Bot#main}) and the same data file, so tasks
  * added through either interface are visible in both.
  */

@@ -9,7 +9,7 @@ import java.util.Locale;
 import bot.exception.BotException;
 
 /**
- * A date, optionally paired with a time of day, used for a Deadline's
+ * Represents a date, optionally paired with a time of day, used for a Deadline's
  * "by" or an Event's "from"/"to". Understanding these as real dates
  * (rather than free-text strings) is what lets Bot format them
  * consistently for display and, e.g., answer "what's happening on this

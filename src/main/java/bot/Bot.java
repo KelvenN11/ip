@@ -12,12 +12,12 @@ import bot.task.TaskList;
 import bot.ui.Ui;
 
 /**
- * The chatbot's entry point and orchestrator. Bot itself holds no
- * command-handling logic: it wires together a {@link Ui} (console
- * interaction), a {@link Storage} (loading/saving the data file), a
- * {@link TaskList} (the tasks and operations on them), and a
- * {@link Parser} (interpreting each command line), and its
- * {@link #run()} loop just calls each of them in turn.
+ * Orchestrates the chatbot. Bot itself holds no command-handling logic:
+ * it wires together a {@link Ui} (console interaction), a
+ * {@link Storage} (loading/saving the data file), a {@link TaskList}
+ * (the tasks and operations on them), and a {@link Parser} (interpreting
+ * each command line), and its {@link #run()} loop just calls each of
+ * them in turn.
  */
 public class Bot {
     private final Ui ui;
