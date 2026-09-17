@@ -26,7 +26,7 @@ public class Main extends Application {
             ap.getStylesheets().add(Main.class.getResource("/view/bot.css").toExternalForm());
             Scene scene = new Scene(ap);
             stage.setScene(scene);
-            stage.setTitle("Bot");
+            stage.setTitle("Pip - Your Cheerful Task Companion");
             fxmlLoader.<MainWindow>getController().setBot(bot);
             stage.show();
         } catch (IOException e) {

@@ -17,7 +17,8 @@ import bot.task.Task;
  */
 public class Ui {
     private static final String DIVIDER = "    ____________________________________________________________";
-    private static final String NAME = "Bot";
+    /** The assistant's name and personality anchor. */
+    private static final String NAME = "Pip";
     private static final String BANNER = " ____   ___  _____ \n"
             + "| __ ) / _ \\|_   _|\n"
             + "|  _ \\| | | | | |  \n"
@@ -48,7 +49,7 @@ public class Ui {
 
     /** Formats the closing message shown just before the program exits. */
     public String formatFarewell() {
-        return joinLines("     Bye. Hope to see you again soon!");
+        return joinLines("     Pip signing off! Keep conquering that task list.");
     }
 
     /** Prints a bare divider line, used to separate one command's output from the next. */
