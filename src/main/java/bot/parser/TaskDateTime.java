@@ -100,6 +100,11 @@ public class TaskDateTime {
         return dateTime.toLocalDate();
     }
 
+    /** Returns whether this value occurs strictly after {@code other}. */
+    public boolean isAfter(TaskDateTime other) {
+        return dateTime.isAfter(other.dateTime);
+    }
+
     /** The text form written to the data file; parseable back via {@link #parse}. */
     public String toSaveFormat() {
         return hasTime ? dateTime.format(INPUT_DATE_TIME) : dateTime.format(INPUT_DATE);

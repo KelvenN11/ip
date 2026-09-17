@@ -54,6 +54,9 @@ public class Storage {
                 for (Task task : tasks) {
                     writer.println(task.toSaveFormat());
                 }
+                if (writer.checkError()) {
+                    throw new IOException("the data file could not be written completely");
+                }
             }
         } catch (IOException e) {
             throw new BotException("OOPS!!! I couldn't save your tasks to disk: " + e.getMessage());

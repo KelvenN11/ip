@@ -58,7 +58,7 @@ public class Ui {
 
     /** Reads one line of user input. */
     public String readCommand() {
-        return scanner.nextLine();
+        return scanner.hasNextLine() ? scanner.nextLine() : "bye";
     }
 
     /** Releases the console input resource; call once, when the program is exiting. */
