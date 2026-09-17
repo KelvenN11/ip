@@ -24,6 +24,9 @@ public class Main extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/view/MainWindow.fxml"));
             AnchorPane ap = fxmlLoader.load();
             ap.getStylesheets().add(Main.class.getResource("/view/bot.css").toExternalForm());
+            // Keep the background visible even when the ScrollPane viewport is transparent.
+            ap.setStyle("-fx-background-color: linear-gradient(to bottom right, #e0f2fe, "
+                    + "#f8fafc 48%, #ede9fe);");
             Scene scene = new Scene(ap);
             stage.setScene(scene);
             stage.setTitle("Pip - Your Cheerful Task Companion");

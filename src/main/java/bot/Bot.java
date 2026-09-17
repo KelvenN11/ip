@@ -175,7 +175,10 @@ public class Bot {
      * deadline, and event cases in {@link #getResponse}, which otherwise
      * differed only in which Parser method produced the task.
      */
-    private String addTask(Task newTask) {
+    private String addTask(Task newTask) throws BotException {
+        if (tasks.containsEquivalent(newTask)) {
+            throw new BotException("OOPS!!! That task is already in your list.");
+        }
         tasks.add(newTask);
         return withSaveResult(ui.formatAdded(newTask, tasks.size()));
     }
