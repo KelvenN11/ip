@@ -40,7 +40,8 @@ public class Parser {
 
     /** Splits one line of user input into its command word and the rest of the line. */
     public static ParsedCommand parseCommand(String input) {
-        String[] parts = input.split(" ", 2);
+        String normalized = input.trim().replaceAll("\\s+", " ");
+        String[] parts = normalized.split(" ", 2);
         String commandWord = parts[0];
         String arguments = (parts.length > 1) ? parts[1] : "";
         return new ParsedCommand(commandWord, arguments);
@@ -119,6 +120,10 @@ public class Parser {
      * @throws BotException if the description, either marker, or either date/time is missing or invalid.
      */
     public static Event parseEvent(String rest) throws BotException {
+        if (rest.indexOf("/from ") != rest.lastIndexOf("/from ")
+                || rest.indexOf("/to ") != rest.lastIndexOf("/to ")) {
+            throw new BotException("OOPS!!! An event can have only one \"/from\" and one \"/to\" marker.");
+        }
         int fromIndex = rest.indexOf("/from ");
         int toIndex = rest.indexOf("/to ");
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
@@ -136,7 +141,12 @@ public class Parser {
             throw new BotException("OOPS!!! Tell me both a \"/from\" and \"/to\" date or time, e.g. "
                     + "\"event project meeting /from 2019-10-15 1400 /to 2019-10-15 1600\".");
         }
-        return new Event(description, TaskDateTime.parse(from), TaskDateTime.parse(to));
+        TaskDateTime fromDateTime = TaskDateTime.parse(from);
+        TaskDateTime toDateTime = TaskDateTime.parse(to);
+        if (!toDateTime.isAfter(fromDateTime)) {
+            throw new BotException("OOPS!!! An event's end date must be after its start date.");
+        }
+        return new Event(description, fromDateTime, toDateTime);
     }
 
     /**

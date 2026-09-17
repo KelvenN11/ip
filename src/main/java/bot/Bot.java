@@ -75,7 +75,7 @@ public class Bot {
      */
     private void runCommandLoop() {
         String input = ui.readCommand();
-        while (!input.equals("bye")) {
+        while (!isExitCommand(input)) {
             ui.showLine();
             System.out.println(getResponse(input));
             ui.showLine();
@@ -88,7 +88,7 @@ public class Bot {
      * so a caller (console loop or GUI) knows when to stop.
      */
     public boolean isExitCommand(String input) {
-        return input.equals("bye");
+        return input != null && input.trim().equalsIgnoreCase("bye");
     }
 
     /** Returns the closing message shown for the {@code bye} command, for the GUI to display. */

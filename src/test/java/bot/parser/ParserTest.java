@@ -29,6 +29,31 @@ class ParserTest {
     }
 
     @Test
+    void parseCommand_extraWhitespace_isNormalized() {
+        Parser.ParsedCommand command = Parser.parseCommand("  todo   read book  ");
+        assertEquals("todo", command.commandWord());
+        assertEquals("read book", command.arguments());
+    }
+
+    @Test
+    void parseEvent_duplicateMarker_isRejected() {
+        assertThrows(BotException.class, () -> Parser.parseEvent(
+                "meeting /from 2019-10-15 /from 2019-10-16 /to 2019-10-17"));
+    }
+
+    @Test
+    void parseEvent_endDateNotAfterStartDate_isRejected() {
+        assertThrows(BotException.class, () -> Parser.parseEvent(
+                "meeting /from 2019-10-16 /to 2019-10-15"));
+    }
+
+    @Test
+    void parseEvent_sameDateWithLaterTime_isAccepted() throws BotException {
+        assertEquals("[E][ ] meeting (from: Oct 15 2019, 2:00PM to: Oct 15 2019, 4:00PM)", Parser.parseEvent(
+                "meeting /from 2019-10-15 1400 /to 2019-10-15 1600").toString());
+    }
+
+    @Test
     void parseTaskIndex_validNumber_returnsZeroBasedIndex() throws BotException {
         assertEquals(1, Parser.parseTaskIndex("2", "mark", 5));
     }

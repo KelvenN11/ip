@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -106,9 +107,9 @@ public class TaskList {
      * matched case-insensitively, in list order, for the {@code find} command.
      */
     public List<Task> findByKeyword(String keyword) {
-        String needle = keyword.toLowerCase();
+        String needle = keyword.toLowerCase(Locale.ROOT);
         return tasks.stream()
-                .filter(task -> task.getDescription().toLowerCase().contains(needle))
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(needle))
                 .collect(Collectors.toList());
     }
 
