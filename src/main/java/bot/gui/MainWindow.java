@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
@@ -24,6 +25,8 @@ public class MainWindow extends AnchorPane {
     private TextField userInput;
     @FXML
     private Button sendButton;
+    @FXML
+    private ImageView headerAvatar;
 
     private Bot bot;
 
@@ -38,6 +41,7 @@ public class MainWindow extends AnchorPane {
     /** Injects the Bot instance and shows its startup greeting. */
     public void setBot(Bot b) {
         bot = b;
+        headerAvatar.setImage(botImage);
         dialogContainer.getChildren().add(DialogBox.getBotDialog(bot.getGreetingMessage(), botImage));
     }
 

@@ -35,6 +35,14 @@ class TaskListTest {
     }
 
     @Test
+    void containsEquivalent_ignoresDoneStatus() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("read book"));
+        taskList.mark(0);
+        assertTrue(taskList.containsEquivalent(new Todo("read book")));
+    }
+
+    @Test
     void delete_removesAndReturnsTask() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));

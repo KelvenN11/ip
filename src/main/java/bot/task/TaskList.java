@@ -35,6 +35,17 @@ public class TaskList {
         tasks.add(task);
     }
 
+    /** Returns whether a task with the same type, description, and dates already exists. */
+    public boolean containsEquivalent(Task candidate) {
+        String candidateData = withoutDoneFlag(candidate);
+        return tasks.stream().anyMatch(task -> withoutDoneFlag(task).equals(candidateData));
+    }
+
+    /** Removes the mutable completion flag before comparing task details. */
+    private String withoutDoneFlag(Task task) {
+        return task.toSaveFormat().replaceFirst(" \\| [01] \\| ", " | * | ");
+    }
+
     /** Removes and returns the task at the given 0-based index. */
     public Task delete(int index) {
         assertValidIndex(index);

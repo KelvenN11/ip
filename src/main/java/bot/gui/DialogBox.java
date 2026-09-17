@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 
 /**
  * Represents a dialog box consisting of an ImageView to represent the
@@ -36,6 +37,10 @@ public class DialogBox extends HBox {
 
         dialog.setText(text);
         displayPicture.setImage(img);
+        displayPicture.setVisible(true);
+        displayPicture.setManaged(true);
+        displayPicture.setOpacity(1.0);
+        displayPicture.setClip(new Circle(16, 16, 16));
     }
 
     /**
